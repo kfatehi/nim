@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 // CLIENT
-
 var tty = require('tty');
     tty.setRawMode(true);  
 var net = require('net');
@@ -20,7 +19,7 @@ var Nim = function () {
   this.nimbus_url = null;
   this.joining = function (_nimbus_url) {
     nimbus_url = _nimbus_url;
-    console.log('Trying to reach active nimbus at: '+nimbus_url);
+    console.log('Trying to reach a nimbus at: '+nimbus_url);
     var nu = url.parse(nimbus_url, true);
     nimbus_id = nu.pathname.slice(1, nu.pathname.length);
     host = nu.hostname;
@@ -110,24 +109,25 @@ var Nim = function () {
     })
     return client;
   };
+  process.on('uncaughtException', function (err) {
+    if (err.code == 'EAFNOSUPPORT')
+      console.log('Invalid nimbus url: '+nimbus_url);
+    else if (err.code == 'ENOTFOUND')
+      console.log('Invalid hostname: '+host);
+    else if (err.code == 'ECONNREFUSED')
+      console.log('Connection refused');
+    else
+      console.error(err.stack);
+  });
 }
 
 // --------
 // startup
 // --------
-switch (argv.length) {
-  case 3:{
-    var nim = new Nim().joining(argv[2]);
-    break;
-  }
-  case 5:{
-    var nim = new Nim().creating(argv[2], argv[3], argv[4]);
-    break;
-  }
-  default:{
-    console.log('Usage: \n\
-      Create new nimbus from file:   nim <file> <host> <port>\n\
-      Join an existing nimbus:       nim <nimbus_url>');
-    process.exit();    
-  }
-}
+var argc = argv.length-2;
+if (argc == 1)
+  new Nim().joining(argv[2]);
+else if (argc == 3)
+  new Nim().creating(argv[2], argv[3], argv[4]);
+else
+  console.log('Usage: nim [<host> <port> <file> | <nimbus_url>]');
