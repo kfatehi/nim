@@ -1,0 +1,42 @@
+(unfinished / work in progress)
+Nim -- Node.js Vim
+------------------
+What is Nim?
+  A collaborative text editor written in node.js and inspired by vim.
+  Nim is a pastie service, and collaborative text editor.
+
+Features:
+  - Asynchronous collaborative editing of a file, known as a "nimbus"
+  - Users can create new nimbus sessions from a text file
+  - Users can join existing nimbus sessions via special url:
+      nim://mindynamics.com:8000/oPfDkasd
+  - Web users can view/download a nimbus buffer in the browser:
+      http://mindynamics.com:8000/oPfDkasd
+
+Usage: 
+  nim [<file> <host> <port> | <nimbus_url>]
+
+Controls:
+  i Input mode
+  : Command mode
+  :q Quit
+  :w Save
+  :x Save and quit
+  ? Chat mode
+  Esc Return to normal mode
+
+TCP Protocol:
+  Connection:
+    Creating a new nimbus:
+        If I am creating a nimbus for test.txt at localhost on port 8000,
+      I will send a "create_new_nimbus" and wait until I receive a nimbus id
+      "new_nimbus:oPfDkasd", upon which I will send my buffer for test.txt.
+      When I am done sending my buffer, I will send "end_buffer:oPfDkasd".
+      In the status bar, I display the nimbus url for sharing as:
+        nim:localhost:8000/oPfDkasd
+
+    Joining an existing nimbus:
+        Now I am someone else, and I receive the above nimbus url, launching
+      my copy of nim with it. I will connect to the host and port, and send
+      and introductory message: "join_nimbus:oPfDkasd". The server will then
+      send all the buffer data, ending with "synced_with_nimbus:oPfDkasd"
