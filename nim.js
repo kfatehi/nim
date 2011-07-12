@@ -10,14 +10,14 @@ var argv = process.ARGV;
 // --------- 
 // Nim class
 // ---------
-var Nim = function () {
+var Nim = function (argv, argc) {
   this.socket = null;
   this.nimbus_id = null;
   this.filepath = null;
   this.host = null;
   this.port = null;
   this.nimbus_url = null;
-  this.joining = function (_nimbus_url) {
+  var joining = function (_nimbus_url) {
     nimbus_url = _nimbus_url;
     console.log('Trying to reach a nimbus at: '+nimbus_url);
     var nu = url.parse(nimbus_url, true);
@@ -27,7 +27,7 @@ var Nim = function () {
     socket = connect(host, port);
     socket.write('join_nimbus:'+nimbus_id);
   }
-  this.creating = function (_filepath, _host, _port) {
+  var creating = function (_filepath, _host, _port) {
     filepath = _filepath;
     host = _host;
     port = _port;
@@ -116,18 +116,13 @@ var Nim = function () {
       console.log('Invalid hostname: '+host);
     else if (err.code == 'ECONNREFUSED')
       console.log('Connection refused');
-    else
-      console.error(err.stack);
+    else { console.error(err.stack); process.exit(); }
   });
+  this.startUp = function (argv, argc) {
+    if (argc == 1) joining(argv[2]);
+    else if (argc == 3) creating(argv[2], argv[3], argv[4]);
+    else console.log('Usage: nim [<host> <port> <file> | <nimbus_url>]');
+  }
 }
 
-// --------
-// startup
-// --------
-var argc = argv.length-2;
-if (argc == 1)
-  new Nim().joining(argv[2]);
-else if (argc == 3)
-  new Nim().creating(argv[2], argv[3], argv[4]);
-else
-  console.log('Usage: nim [<host> <port> <file> | <nimbus_url>]');
+new Nim().startUp(argv, argv.length-2);
