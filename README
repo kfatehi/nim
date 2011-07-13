@@ -16,7 +16,7 @@ Features:
 Usage: 
   nim [<host> <port> <file> | <nimbus_url>]
 
-Controls: (when ncurses editor gets implemented)
+Controls: (text-gui not yet implemented)
   i Input mode
   : Command mode
   :q Quit
@@ -26,5 +26,5 @@ Controls: (when ncurses editor gets implemented)
   Esc Return to normal mode
   
 Dependencies:
-  (Client Side) node-ncurses  https://github.com/mscdex/node-ncurses
+  (Client Side) no dependencies :]
   (Server Side) node_redis    https://github.com/mranney/node_redis
