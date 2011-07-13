@@ -38,10 +38,10 @@ var doSeedBuffer = function (data, id, socket) {
   console.log('Seeding buffer: '+id);
   redis.set('nimbus:'+id, buffer, function (err, reply) {
     if (reply == 'OK') {
-      socket.write('buffer_seed_ok')
-      console.log('  Buffer seeded successfully: '+id)
+      socket.write('buffer_seed_ok');
+      console.log('  Buffer seeded successfully: '+id);
     } else {
-      socket.write('error: Failed to insert buffer.')
+      socket.write('error: Failed to insert buffer.');
       console.error('  Buffer seeding failed: '+id);
       console.error('  Printing failed input for: '+id+'>\n'+buffer);
       console.error(err);
