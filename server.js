@@ -6,10 +6,6 @@
 var net = require('net');
 var exec = require('child_process').exec;
 
-var onData = function (data) {
-
-}
-
 var server = net.createServer(function (socket) {
   socket.setEncoding("UTF8");
   socket.addListener("data", function (data) {

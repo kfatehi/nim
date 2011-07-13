@@ -27,7 +27,7 @@ var Nim = function (argv, argc) {
     socket = connect(host, port);
     socket.write('join_nimbus:'+nimbus_id);
   }
-  var creating = function (_filepath, _host, _port) {
+  var creating = function (_host, _port, _filepath) {
     filepath = _filepath;
     host = _host;
     port = _port;
