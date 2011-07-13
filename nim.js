@@ -7,6 +7,9 @@ var fs = require('fs');
 var url = require("url"); // for parsing nimbus_url
 var argv = process.ARGV;
 
+//
+
+
 // --------- 
 // Nim class
 // ---------
@@ -17,7 +20,8 @@ var Nim = function (argv, argc) {
   var host = null;
   var port = null;
   var nimbus_url = null;
-  var buffer = 'buffer';
+  var buffer = ''; // used for editing
+  var sysbuf = ''; // used for system output and chat
   var joining = function (_nimbus_url) {
     nimbus_url = _nimbus_url;
     console.log('Trying to reach a nimbus at: '+nimbus_url);
@@ -66,10 +70,10 @@ var Nim = function (argv, argc) {
       console.log('Buffer not found--requesting buffer for: '+nimbus_id);
       socket.write('join_nimbus:'+nimbus_id);
     } else {
-      console.log('Buffer found: \n'+buffer);
       // do we need to use ncurses?
       console.log('window size: '+tty.getWindowSize(0));
       console.log('Nimbus URL: '+nimbus_url);
+      console.log(console);
       process.openStdin();
       process.stdin.on('keypress', doKeypress);
     }
@@ -95,7 +99,7 @@ var Nim = function (argv, argc) {
             nimbus_url = 'nim:'+host+':'+port+'/'+nimbus_id;
             console.log('Initialized a new nimbus: '+nimbus_url);
             fs.readFile(filepath, "binary", function (err, _buffer) {
-              buffer = _buffer;
+              buffer = (_buffer ? _buffer : '');
               socket.write('seed_buffer:'+nimbus_id+'>'+buffer);
               console.log('Sent buffer for nimbus: '+nimbus_id);
           	});

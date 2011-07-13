@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 // SERVER
+process.on('uncaughtException', function (err) {
+  // Just a failsafe--or in case we're getting fuzzed :P
+  console.error(err.stack);
+});
 
 // need to install redis....
 var crypto = require('crypto');
