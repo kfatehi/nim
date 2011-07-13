@@ -6,6 +6,13 @@ var net = require('net');
 var fs = require('fs');
 var url = require("url"); // for parsing nimbus_url
 var util = require('util');
+// var util = require('util'),
+//     exec = require('child_process').exec,
+//     child;
+// 
+// child = exec('clear',  function (e, o, se) { console.log(o) });
+
+
 var argv = process.ARGV;
 process.on('uncaughtException', function (err) {
   if (err.code == 'EAFNOSUPPORT')
@@ -17,33 +24,41 @@ process.on('uncaughtException', function (err) {
   else { process.stdout.write(err.stack); process.exit(); }
 });
 
+var TextFormatter = function () {
+  this.color = {
+    end:'\033[0m',
+    pink:function(t){return'\033[95m'+t+this.end},
+    blue:function(t){return'\033[94m'+t+this.end},
+    green:function(t){return'\033[92m'+t+this.end},
+    yellow:function(t){return'\033[93m'+t+this.end},
+    red:function(t){return'\033[91m'+t+this.end}
+  }
+  this.center = function () {
+    
+  }
+}
+
 // --------- 
-// GUI class
+// Window class
 // ---------
-var Gui = function (nim) {
-  var color = {
-    PINK    :'\033[95m',
-    BLUE    :'\033[94m',
-    GREEN   :'\033[92m',
-    YELLOW  :'\033[93m',
-    RED     :'\033[91m',
-    END     :'\033[0m',
-  };
-  var chat = '';
+var Window = function (nim) {
+  var tf = new TextFormatter();
+  var so = process.stdout;
+  var windowSize = null; //height[0] width[0]
+  var statusBar = null;
+  var windowBuffer = ''; 
+  var logBuf = '';
   var print = function (c, str) {
-    if (c)
-      chat += color[c]+str+color['END']+'\n';
-    else
-      chat += str+'\n';
-    // for now lets just print chat
-    console.log(chat);
+    if(c) logBuf += tf.color.green(str+'\n');
+    else  logBuf += str+'\n';
   }
   var inspect = function (obj) {
     print(false, util.inspect(obj, true, null));
   }
-  var keypress = function (chunk, key) {
+  var onKeypress = function (chunk, key) {
     print('YELLOW', '[chunk: '+chunk+'] ');
     inspect(key);
+    console.log(key);
     if (key && key.name) {
       switch (key.name) {
         case 'c':
@@ -55,19 +70,37 @@ var Gui = function (nim) {
         case 'left':
           // caret.goleft
         default:
-
       }
-    } else {
-      return chunk;
     }
   }
-  this.init = function () {
-    print('RED', 'LAUNCHING GUI');
-    process.openStdin();
-    process.stdin.on('keypress', keypress);
+  var clear = function () {
+    for(var line=0; line < windowSize[0]; line++) 
+      for(var col=0; col < windowSize[1]; col++) so.write(' ')
+        so.write('\n');
   }
-  // console.log('window size: '+tty.getWindowSize(0));
-  // console.log('Nimbus URL: '+nimbus_url);
+  var draw = function () {
+    clear();
+    for(var line=0; line < windowSize[0]; line++) { // bottom up
+      for(var col=0; col < windowSize[1]; col++) {
+        if (line==0 && col < statusBar.length) { //statusbar
+          process.stdout.write(statusBar[col]);
+        }
+      }
+    }
+  }
+  var update = function () {
+    x = tty.getWindowSize(0);
+    statusBar = tf.color.green('Nim v0.1');
+  }
+  var loop = function () {
+    update();
+    draw();
+  }
+  this.init = function (fps) {
+    process.openStdin();
+    process.stdin.on('keypress', onKeypress);
+    setInterval(loop, 1000/fps);    
+  }
 };
 
 // --------- 
@@ -81,7 +114,7 @@ var Nim = function (argv, argc, readyCallback) {
   var port = null;
   var nimbus_url = null;
   var buffer = ''; // used for editing
-  var joining = function (_nimbus_url) {
+  this.join = function (_nimbus_url) {
     nimbus_url = _nimbus_url;
     console.log('Trying to reach a nimbus at: '+nimbus_url);
     var nu = url.parse(nimbus_url, true);
@@ -91,7 +124,7 @@ var Nim = function (argv, argc, readyCallback) {
     socket = connect(host, port);
     socket.write('join_nimbus:'+nimbus_id);
   }
-  var creating = function (_host, _port, _filepath) {
+  this.create = function (_host, _port, _filepath) {
     filepath = _filepath;
     host = _host;
     port = _port;
@@ -132,14 +165,12 @@ var Nim = function (argv, argc, readyCallback) {
           break;
         }
         case 'seed_buffer':{
+          console.log('Received buffer data for nimbus: '+nimbus_url)
           buffer = data.slice(20, data.length);
-          init();
           break;
         }
         case 'buffer_seed_ok':{
           console.log('Server reported successful nimbus creation!');
-          console.log('Switching into editor mode.');
-          init();
           break;
         }
         case 'error':{
@@ -154,18 +185,30 @@ var Nim = function (argv, argc, readyCallback) {
       }
     }
   }
-  if (argc == 1) joining(argv[2]);
-  else if (argc == 3) creating(argv[2], argv[3], argv[4]);
-  else process.stdout.write('Usage: nim [<host> <port> <file> | <nimbus_url>]\n');
-  var init = function () {
-    console.log('Initializing editor...');
+  var launchGui = function () {
+    process.stdout.write('Preflight buffer check... ');
     if (buffer == null) {
-      console.log('Buffer not found--requesting buffer for: '+nimbus_id);
+      console.log('\nBuffer not found -- requesting a buffer for: '+nimbus_id);
       socket.write('join_nimbus:'+nimbus_id);
     } else {
+      console.log('OK!');
       readyCallback(this);
     }
   }
 }
 
-new Nim(argv, argv.length-2, function (nim) { new Gui(nim).init(); });
+function main(argv, argc) {
+  
+  var window = new Window().init(10);
+  
+  
+  // var nim = new Nim();
+  // if (argc == 1)
+  //   nim.join(argv[2]));
+  // else if (argc == 3)
+  //   new Gui(nim.create(argv[2], argv[3], argv[4]));
+  // else 
+  //   process.stdout.write('Usage: nim [<host> <port> <file> | <nimbus_url>]\n'); 
+}
+
+main(argv, argv.length-2);
