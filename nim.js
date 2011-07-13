@@ -11,12 +11,13 @@ var argv = process.ARGV;
 // Nim class
 // ---------
 var Nim = function (argv, argc) {
-  this.socket = null;
-  this.nimbus_id = null;
-  this.filepath = null;
-  this.host = null;
-  this.port = null;
-  this.nimbus_url = null;
+  var socket = null;
+  var nimbus_id = null;
+  var filepath = null;
+  var host = null;
+  var port = null;
+  var nimbus_url = null;
+  var buffer = 'buffer';
   var joining = function (_nimbus_url) {
     nimbus_url = _nimbus_url;
     console.log('Trying to reach a nimbus at: '+nimbus_url);
@@ -59,14 +60,21 @@ var Nim = function (argv, argc) {
     }
   }
 
-  var editorLoop = function () {
-    console.log('Launching editor...');
-    // we'll have to learn to draw a real editor soon.
-    console.log('window size: '+tty.getWindowSize(0));
-    process.openStdin();
-    process.stdin.on('keypress', doKeypress);
+  var initEditor = function () {
+    console.log('Initializing editor...');
+    if (buffer == null) {
+      console.log('Buffer not found--requesting buffer for: '+nimbus_id);
+      socket.write('join_nimbus:'+nimbus_id);
+    } else {
+      console.log('Buffer found: \n'+buffer);
+      // do we need to use ncurses?
+      console.log('window size: '+tty.getWindowSize(0));
+      console.log('Nimbus URL: '+nimbus_url);
+      process.openStdin();
+      process.stdin.on('keypress', doKeypress);
+    }
   }
-
+  
   // -----
   var connect = function () {
     var client = net.createConnection(port, host);
@@ -86,19 +94,32 @@ var Nim = function (argv, argc) {
             nimbus_id = params[0].slice(0,-1);
             nimbus_url = 'nim:'+host+':'+port+'/'+nimbus_id;
             console.log('Initialized a new nimbus: '+nimbus_url);
-            // get file contents and send
-            socket.write('end_buffer:'+nimbus_id);
-            console.log('Sent buffer for nimbus: '+nimbus_id);
+            fs.readFile(filepath, "binary", function (err, _buffer) {
+              buffer = _buffer;
+              socket.write('seed_buffer:'+nimbus_id+'>'+buffer);
+              console.log('Sent buffer for nimbus: '+nimbus_id);
+          	});
             break;
           }
-          case 'end_buffer':{
-            editorLoop()
+          case 'seed_buffer':{
+            buffer = data.slice(20, data.length);
+            initEditor();
             break;
+          }
+          case 'buffer_seed_ok':{
+            console.log('Server reported successful nimbus creation!');
+            console.log('Switching into editor mode.');
+            initEditor();
+            break;
+          }
+          case 'error':{
+            console.error('[server error] '+data);
+            process.exit();
           }
           default:{
             console.log('Unknown message: '+message);
             console.log('Included params: '+params);
-            socket.end();
+            process.exit();
           }
         }
       }
@@ -125,4 +146,4 @@ var Nim = function (argv, argc) {
   }
 }
 
-new Nim().startUp(argv, argv.length-2);
+var nim = new Nim().startUp(argv, argv.length-2);
