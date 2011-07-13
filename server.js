@@ -2,12 +2,18 @@
 // SERVER
 
 // need to install redis....
-
+var crypto = require('crypto');
+var shasum = crypto.createHash('sha1');
 var net = require('net');
 var exec = require('child_process').exec;
 
-var onData = function (data) {
-
+var generateNimbusId = function () {
+  var crypto = require('crypto');
+  var shasum = crypto.createHash('sha1');
+  var s = new Date().getTime().toString();
+  shasum.update(s);
+  var d = shasum.digest('hex');
+  return d; // cut to 5 chars....
 }
 
 var server = net.createServer(function (socket) {
