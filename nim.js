@@ -39,7 +39,8 @@ var Window = function () {
   var n = null;
   var tf = new TextFormatter();
   var so = process.stdout;
-  var size = null; // [height, width]
+  var windowSize = null; // h,w
+  var editorSize = null;
   var statusBar = null;
   var logBuf = '';
   var print = function (c, str)
@@ -70,15 +71,19 @@ var Window = function () {
       }
     }
   }
-  var clear = function () {
-    for(var line=0; line < size[0]; line++) 
-      for(var col=0; col < size[1]; col++) so.write(' ')
-        so.write('\n');
+  var update = function ()
+  {
+    statusBar = tf.color.green('Nim v0.1');
   }
+  var clear = function () {
+    for(var line=0; line < windowSize[0]; line++) 
+      for(var col=0; col < windowSize[1]; col++) so.write(' ')
+        so.write('\n');
+  }  
   var draw = function ()
   {
-    for(var line=0; line < size[0]; line++) {
-      for(var col=0; col < size[1]; col++) {
+    for(var line=0; line < windowSize[0]; line++) {
+      for(var col=0; col < windowSize[1]; col++) {
         if (line==1 && col < statusBar.length)
           process.stdout.write(statusBar[col]);
         else {
@@ -88,13 +93,10 @@ var Window = function () {
       so.write('\n');
     }
   }
-  var update = function ()
-  {
-    size = tty.getWindowSize(); 
-    statusBar = tf.color.green('Nim v0.1');
-  }
   var loop = function ()
   {
+    windowSize = tty.getWindowSize();
+    editorSize = [windowSize[0]-1, windowSize[1]]; 
     update();
     clear();
     draw();
