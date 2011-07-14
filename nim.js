@@ -6,13 +6,6 @@ var net = require('net');
 var fs = require('fs');
 var url = require("url"); // for parsing nimbus_url
 var util = require('util');
-// var util = require('util'),
-//     exec = require('child_process').exec,
-//     child;
-// 
-// child = exec('clear',  function (e, o, se) { console.log(o) });
-
-
 var argv = process.ARGV;
 process.on('uncaughtException', function (err) {
   if (err.code == 'EAFNOSUPPORT')
@@ -33,7 +26,8 @@ var TextFormatter = function () {
     yellow:function(t){return'\033[93m'+t+this.end},
     red:function(t){return'\033[91m'+t+this.end}
   }
-  this.center = function () {
+  this.center = function ()
+  {
     
   }
 }
@@ -41,21 +35,24 @@ var TextFormatter = function () {
 // --------- 
 // Window class
 // ---------
-var Window = function (nim) {
+var Window = function () {
+  var n = null;
   var tf = new TextFormatter();
   var so = process.stdout;
-  var windowSize = null; //height[0] width[0]
+  var size = null; // [height, width]
   var statusBar = null;
-  var windowBuffer = ''; 
   var logBuf = '';
-  var print = function (c, str) {
+  var print = function (c, str)
+  {
     if(c) logBuf += tf.color.green(str+'\n');
     else  logBuf += str+'\n';
   }
-  var inspect = function (obj) {
+  var inspect = function (obj)
+  {
     print(false, util.inspect(obj, true, null));
   }
-  var onKeypress = function (chunk, key) {
+  var onKeypress = function (chunk, key)
+  {
     print('YELLOW', '[chunk: '+chunk+'] ');
     inspect(key);
     console.log(key);
@@ -74,29 +71,36 @@ var Window = function (nim) {
     }
   }
   var clear = function () {
-    for(var line=0; line < windowSize[0]; line++) 
-      for(var col=0; col < windowSize[1]; col++) so.write(' ')
+    for(var line=0; line < size[0]; line++) 
+      for(var col=0; col < size[1]; col++) so.write(' ')
         so.write('\n');
   }
-  var draw = function () {
-    clear();
-    for(var line=0; line < windowSize[0]; line++) { // bottom up
-      for(var col=0; col < windowSize[1]; col++) {
-        if (line==0 && col < statusBar.length) { //statusbar
+  var draw = function ()
+  {
+    for(var line=0; line < size[0]; line++) {
+      for(var col=0; col < size[1]; col++) {
+        if (line==1 && col < statusBar.length)
           process.stdout.write(statusBar[col]);
+        else {
+          //everything else
         }
       }
+      so.write('\n');
     }
   }
-  var update = function () {
-    x = tty.getWindowSize(0);
+  var update = function ()
+  {
+    size = tty.getWindowSize(); 
     statusBar = tf.color.green('Nim v0.1');
   }
-  var loop = function () {
+  var loop = function ()
+  {
     update();
+    clear();
     draw();
   }
-  this.init = function (fps) {
+  this.init = function (fps)
+  {
     process.openStdin();
     process.stdin.on('keypress', onKeypress);
     setInterval(loop, 1000/fps);    
@@ -106,7 +110,8 @@ var Window = function (nim) {
 // --------- 
 // Nim class
 // ---------
-var Nim = function (argv, argc, readyCallback) {
+var Nim = function (readyCallback)
+{
   var socket = null;
   var nimbus_id = null;
   var filepath = null;
@@ -114,7 +119,9 @@ var Nim = function (argv, argc, readyCallback) {
   var port = null;
   var nimbus_url = null;
   var buffer = ''; // used for editing
-  this.join = function (_nimbus_url) {
+  var chat = ''; // used for chat, log, system messages
+  this.join = function (_nimbus_url)
+  {
     nimbus_url = _nimbus_url;
     console.log('Trying to reach a nimbus at: '+nimbus_url);
     var nu = url.parse(nimbus_url, true);
@@ -124,7 +131,8 @@ var Nim = function (argv, argc, readyCallback) {
     socket = connect(host, port);
     socket.write('join_nimbus:'+nimbus_id);
   }
-  this.create = function (_host, _port, _filepath) {
+  this.create = function (_host, _port, _filepath)
+  {
     filepath = _filepath;
     host = _host;
     port = _port;
@@ -132,7 +140,8 @@ var Nim = function (argv, argc, readyCallback) {
     socket = connect(host, port);
     socket.write('create_new_nimbus');
   }
-  var connect = function () {
+  var connect = function ()
+  {
     var client = net.createConnection(port, host);
     client.setEncoding("UTF8");
     client.addListener("connect", function () {
@@ -145,7 +154,8 @@ var Nim = function (argv, argc, readyCallback) {
     })
     return client;
   };
-  var onData = function (data) {
+  var onData = function (data)
+  {
     if (data[0] == '@') {
       // reserved for real time data exchange
     } else {
@@ -167,14 +177,16 @@ var Nim = function (argv, argc, readyCallback) {
         case 'seed_buffer':{
           console.log('Received buffer data for nimbus: '+nimbus_url)
           buffer = data.slice(20, data.length);
+          launchGui();
           break;
         }
         case 'buffer_seed_ok':{
           console.log('Server reported successful nimbus creation!');
+          launchGui();
           break;
         }
         case 'error':{
-          gui.error('[server error] '+data);
+          console.error('[server error] '+data);
           process.exit();
         }
         default:{
@@ -185,7 +197,8 @@ var Nim = function (argv, argc, readyCallback) {
       }
     }
   }
-  var launchGui = function () {
+  var launchGui = function ()
+  {
     process.stdout.write('Preflight buffer check... ');
     if (buffer == null) {
       console.log('\nBuffer not found -- requesting a buffer for: '+nimbus_id);
@@ -197,18 +210,17 @@ var Nim = function (argv, argc, readyCallback) {
   }
 }
 
-function main(argv, argc) {
-  
-  var window = new Window().init(10);
-  
-  
-  // var nim = new Nim();
-  // if (argc == 1)
-  //   nim.join(argv[2]));
-  // else if (argc == 3)
-  //   new Gui(nim.create(argv[2], argv[3], argv[4]));
-  // else 
-  //   process.stdout.write('Usage: nim [<host> <port> <file> | <nimbus_url>]\n'); 
+function main(argv, argc)
+{
+  var nim = new Nim(function (n) {
+    new Window(n).init(10);
+  });
+  if (argc == 1)
+    nim.join(argv[2]);
+  else if (argc == 3)
+    nim.create(argv[2], argv[3], argv[4]);
+  else 
+    process.stdout.write('Usage: nim [<host> <port> <file> | <nimbus_url>]\n'); 
 }
 
 main(argv, argv.length-2);

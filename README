@@ -10,7 +10,7 @@ Features:
   - (done) Users can create a new nimbus session from a text file
   - (done) Users can join existing nimbus sessions via "nim:" urls:
       nim:mindynamics.com:8000/oPfDkasd
-  - (not done) Web users can view/download a nimbus buffer in the browser:
+  - (done) Web users can view/download a nimbus buffer in the browser:
       http://mindynamics.com:8000/oPfDkasd
 
 Usage: 
