@@ -13,8 +13,8 @@ redis.on("error", function (err) {
     console.log("Redis client error: " + err);
 });
 
-
-var doWebBufferRequest = function (id, socket) {
+var doWebBufferRequest = function (id, socket)
+{
   console.log('Web request for: '+id);
   redis.exists('nimbus:'+id, function (err, reply) {
     if (reply)
@@ -31,7 +31,8 @@ var doWebBufferRequest = function (id, socket) {
     else socket.end('Nothing found with id: '+id);
   });
 }
-var doCreateNewNimbus = function (socket) {
+var doCreateNewNimbus = function (socket)
+{
   var id = generateId();
   redis.exists('nimbus:'+id, function (err, reply) {
     if (reply == 1)
@@ -42,7 +43,8 @@ var doCreateNewNimbus = function (socket) {
     }
   });
 }
-var doSeedBuffer = function (data, id, socket) {
+var doSeedBuffer = function (data, id, socket)
+{
   var buffer = data.slice(18, data.length);
   console.log('Seeding buffer: '+id);
   redis.set('nimbus:'+id, buffer, function (err, reply) {
@@ -57,7 +59,8 @@ var doSeedBuffer = function (data, id, socket) {
     }
   });
 }
-var generateId = function () {
+var generateId = function ()
+{
   var shasum = crypto.createHash('sha1');
   shasum.update(new Date().getTime().toString());
   return shasum.digest('hex').slice(0,6);
