@@ -16,7 +16,7 @@ Features:
 Usage: 
   nim [<host> <port> <file> | <nimbus_url>]
 
-Controls: (text-gui not yet implemented)
+Controls: (not done)
   i Input mode
   : Command mode
   :q Quit
@@ -26,5 +26,8 @@ Controls: (text-gui not yet implemented)
   Esc Return to normal mode
   
 Dependencies:
-  (Client Side) no dependencies :]
-  (Server Side) node_redis    https://github.com/mranney/node_redis
+  To use the client:
+    node-ncurses: npm install ncurses@latest
+  
+  To run the server:
+    node_redis: npm install redis
