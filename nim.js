@@ -45,10 +45,9 @@ var Nim = function (){
         mode = null;
         break;
       }
-      case nc.keys.BACKSPACE:{}
+      case nc.keys.BACKSPACE:
       case 127:{ // backspace is 127 on mac
-        if (w.curx > 0) 
-          w.delch(w.curx-1, w.cury);
+        if (w.curx > 0) w.delch(w.cury, w.curx-1);
         break;
       }
       case nc.keys.DEL:{
@@ -60,10 +59,12 @@ var Nim = function (){
       }
       case nc.keys.UP:{
         if (w.cury > 2) w.cursor(w.cury-1, w.curx);
+        else w.scroll(-1);
         break;
       }
       case nc.keys.DOWN:{
         if (w.cury < w.height-3) w.cursor(w.cury+1, w.curx);
+        else w.scroll(1);
         break;
       }
       case nc.keys.LEFT:{
