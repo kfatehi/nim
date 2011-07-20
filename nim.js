@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// This file is here for reference--we will no longer be using Node.js for the client.
+// See nim.c for the actual client source code, written in C instead.
 // CLIENT
 var nc = require('ncurses');
 var net = require('net');
