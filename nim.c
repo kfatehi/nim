@@ -10,15 +10,17 @@ void initialize(void);
 int main()
 {	
   char mesg[] = "Just a string";
+  char str[80];
   int row, col;
   
   initialize();
   getmaxyx(stdscr, row, col); // get the number of rows and columns
 	mvprintw(row/2, (col-strlen(mesg))/2, "%s", mesg);
-  mvprintw(row-2, 0, "This screen has %d rows and %d columns\n", row, col);
-  printw("Try resizing your window if possible and then run this program again");
-	refresh();			/* Print it on to the real screen */
-	getch();			/* Wait for user input */
+
+  getstr(str);
+  mvprintw(LINES - 2, 0, "You entered: %s", str);
+
+  getch();			/* Wait for user input */
 	endwin();			/* End curses mode		  */
 	return 0;
 }
