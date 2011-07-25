@@ -16,8 +16,8 @@ Features:
 
 Usage:
   nim <file_path> <-- Create a new nimbus from a file
-	nim <nimbus_id> <-- Join an existing nimbus by id
-	nim 						<-- Create a blank nimbus
+  nim <nimbus_id> <-- Join an existing nimbus by id
+  nim             <-- Create a blank nimbus
 
 Controls:
   i Input mode

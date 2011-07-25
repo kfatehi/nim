@@ -22,23 +22,19 @@ int main(int argc, char *argv[])
   int sock;                        /* Socket descriptor */
   struct sockaddr_in echoServAddr; /* Echo server address */
   unsigned short echoServPort;     /* Echo server port */
-  char servIP[16] = "127.0.0.1";       /* Server IP address (dotted quad) */
+  char servIP[16] = "127.0.0.1";   /* Server IP address (dotted quad) */
   char *echoString;                /* String to send to echo server */
   char echoBuffer[RCVBUFSIZE];     /* Buffer for echo string */
   unsigned int echoStringLen;      /* Length of string to echo */
   int bytesRcvd, totalBytesRcvd;   /* Bytes read in single recv() 
                                       and total bytes read */
-  /* Test for correct number of arguments */
-  if ( argc > 2 || strcmp(argv[1],"-h") == 0 || strcmp(argv[1],"--help") == 0 ) {
-    fprintf(stderr, "Usage:\n  %s /path/to/file\n  %s <nimbus_id>\n  %s\n",
-      argv[0], argv[0], argv[0]);
+  if ( argc >= 2 && (strcmp(argv[1],"-h") & strcmp(argv[1],"--help")) == 0 ) {
+    fprintf(stderr, "Usage:\n \
+      %s /path/to/file\n \
+      %s <nimbus_id>\n \
+      %s\n", argv[0], argv[0], argv[0]);
     exit(1);
-  } else {
-    
-    printf("v: %d  ... continue...\n", strcmp("hff", "hi"));
-    exit(0);
-  }
-  
+  }  
 
   echoString = "create_new_nimbus";
 
