@@ -1,0 +1,84 @@
+Initialization functions:
+	initscr(); 	// Start ncurses mode
+	raw();        // Disable line buffering
+	cbreak();	// Disable line buffering
+	noecho();     // Suppress automatic key echo
+	keypad(stdscr, TRUE); // Enable reading of function keys, arrow keys, etc
+	endwin();	// End curses mode
+
+Output functions:
+	addch() class: Print single character without attributes
+	printw() class: Print formatted output similar to printf()
+	addstr() class: Print strings
+
+Input functions:
+	getch() class: Get a character
+	scanw() class: Get formatted input
+	getstr() class: Get strings
+
+Movement functions:
+	move(row, col)	// Moves the cursor to row and column
+	mdaddch(row, col, ch) 	// Move and print character
+	mvprintw(row, col, str)	// Move and print string
+	// Prints mesg in the middle of the screen, centered:
+	mvprintw(row/2, (col-strlen(mesg))/2, "%s", mesg);
+
+Coordinate functions: 
+	getyx(win_ptr, y, x);		// get the current cursor position
+	getmaxyx(win_ptr, row, col); // get the windows max coords
+	getbegyx();	// get current window's beginning coords
+	getparyx();		// get the beginning coords of the subwindow relative to the main window
+
+Attribute functions:
+	attron(A_REVERSE | A_BLINK);
+	attroff();
+	attrset();		// Overrides attron and attroff
+	standend(); 	// same as attrset(A_NORMAL); turns everything off and back to normal
+	attrget();
+	Attribute bitmask modifiers: (Defined in ncurses.h)
+              A_NORMAL        Normal display (no highlight)
+              A_STANDOUT      Best highlighting mode of the terminal.
+              A_UNDERLINE     Underlining
+              A_REVERSE       Reverse video
+              A_BLINK         Blinking
+              A_DIM           Half bright
+              A_BOLD          Extra bright or bold
+              A_PROTECT       Protected mode
+              A_INVIS         Invisible or blank mode
+              A_ALTCHARSET    Alternate character set
+              A_CHARTEXT      Bit-mask to extract a character
+              COLOR_PAIR(n)   Color-pair number n
+	
+
+Window functions:
+	newwin(height, width, starty, starts);	// Allocates memory for a new window and returns a pointer to a struct WINDOW
+	delwin(win_ptr);		// destroys a window (deallocates memory)
+	wrefresh(win_ptr);	// refresh/redraw the window at win_ptr
+
+Dump & Restore functions:
+	scr_dump()		// dump screen contents to file
+	scr_restore();		// restore screen from dump file	
+	putwin();			// put present window state to file
+	getwin();			// get stored window state from file
+	copywin(win src, dest, region, bool destructive?);	// copy a window completely onto another
+
+Border functions:
+	box(win_ptr, 0, 0);	// draw a border around the window. 0, 0 gives default chars for border
+	wborder(local_win, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '); // same as box, but more control over the border chars
+						^--> left, right, top, bottom, topleft, topright, bottomleft, bottomright
+	mvhline();
+	mvvline();
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
