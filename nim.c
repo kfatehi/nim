@@ -16,13 +16,13 @@
 void initGui(void);
 bool fileExists(const char *filename);
 void DieWithError(char *errorMessage);
-int establishConnection(const char *ip, const int port);
-void writeSocket(int sock, const char *buffer);
-void readSocket(int sock, char *buffer);
+const int establishConnection(const char *ip, const int port);
+void writeSocket(const int sock, const char *buffer);
+void readSocket(const int sock, char *buffer, const unsigned int buf_size);
 
 int main(int argc, char *argv[])
 {
-  int sock = establishConnection(IP_ADDRESS, PORT);
+  const int sock = establishConnection(IP_ADDRESS, PORT);
   char rcvBuffer[RCVBUFSIZE];
 
   if ( argc == 1 ) {
@@ -46,57 +46,39 @@ int main(int argc, char *argv[])
 
   writeSocket(sock, "create_new_nimbus");
 	
-  readSocket(sock, rcvBuffer);
+  readSocket(sock, rcvBuffer, RCVBUFSIZE);
   
 
-  printf("Received: %s\n", rcvBuffer);
 
   close(sock);
   exit(0);
 }
 
-void writeSocket(int sock, const char *buffer) {
+void writeSocket(const int sock, const char *buffer) {
   unsigned int len = strlen(buffer);        /* Determine input length */
   if (send(sock, buffer, len, 0) != len)    /* Send the string to the server */
     fprintf(stderr, "send() sent a different number of bytes than expected");
 }
-void readSocket(int sock, char *buffer) {
-  /* Receive the length back from the server */
+void readSocket(const int sock, char *buffer, const unsigned int buf_size) {
   int bytesRcvd;
-  int totalBytesRcvd = 0;   /* Bytes read in single recv() 
-                                      and total bytes read */
-                                      
- /*
- int recv(int socket_descriptor,
-          char *buffer,
-          int buffer_length,
-          int flags)
- */                                      
-                                      
-//  while (totalBytesRcvd < length) {
-    /* Receive up to the buffer size (minus 1 to leave space for
-    a null terminator) bytes from the sender */
-    if ((bytesRcvd = recv(sock, buffer, RCVBUFSIZE - 1, 0)) <= 0)
-      fprintf(stderr, "recv() failed or connection closed prematurely");
-//    totalBytesRcvd += bytesRcvd;   /* Keep tally of total bytes */
-    buffer[bytesRcvd] = '\0';  /* Terminate the string! */
-    printf("Bytes received: %d\n", bytesRcvd);
-    //printf("%s", buffer);      /* Print the echo buffer */
-//  }
+  int totalBytesRcvd = 0;
+  if ((bytesRcvd = recv(sock, buffer, buf_size - 1, 0)) <= 0)
+    fprintf(stderr, "recv() failed or connection closed prematurely");
+  buffer[bytesRcvd] = '\0';  /* Terminate the string! */
+  fprintf(stdout, "Bytes received: %d\n", bytesRcvd);
+  fprintf(stdout, "Received: %s\n", buffer);
 }
-int establishConnection(const char *ip, const int port) {
-  int sock; // Socket descriptor
+const int establishConnection(const char *ip, const int port) {
+  int sock;
   struct sockaddr_in servAddr; // Server address
   /* Create a reliable, stream socket using TCP */
   if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
     DieWithError("socket() failed");
-
   /* Construct the server address structure */
   memset(&servAddr, 0, sizeof(servAddr));     /* Zero out structure */
   servAddr.sin_family      = AF_INET;             /* Internet address family */
   servAddr.sin_addr.s_addr = inet_addr(ip);   /* Server IP address */
   servAddr.sin_port        = htons(port); /* Server port */
-
   /* Establish the connection to the echo server */
   if (connect(sock, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)
     DieWithError("Failed to connect to server"); 
