@@ -108,6 +108,6 @@ var server = net.createServer(function (socket) {
       }
     }
   });
-}).listen(8000, "127.0.0.1", function () {
+}).listen(8000, "0.0.0.0", function () {
   console.log('Listening on port 8000');
 });

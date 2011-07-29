@@ -70,17 +70,38 @@ void readSocket(const int sock, char *buffer, const unsigned int buf_size) {
 }
 const int establishConnection(const char *ip, const int port) {
   int sock;
-  struct sockaddr_in servAddr; // Server address
+
+  // we should use getaddrinfo to create the sockaddr struct
+  // thus being ipv4 and 6 agnostic
+  // http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html#getaddrinfo
+  // see the link for how to use it
+  // either way, here it is:
+  // int status;
+  // struct addrinfo hints;
+  // struct addrinfo *servinfo;  // will point to the results
+  //
+  // memset(&hints, 0, sizeof hints); // make sure the struct is empty
+  // hints.ai_family = AF_UNSPEC;     // don't care IPv4 or IPv6
+  // hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
+  //
+  // // get ready to connect
+  // status = getaddrinfo("www.example.net", "3490", &hints, &servinfo);
+  //
+  // // servinfo now points to a linked list of 1 or more struct addrinfos
+  //
+  // // etc.
+  
+  struct sockaddr_in sa; // Server address
   /* Create a reliable, stream socket using TCP */
   if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
-    DieWithError("socket() failed");
+    DieWithError("Failed to initialize socket file descriptor");
   /* Construct the server address structure */
-  memset(&servAddr, 0, sizeof(servAddr));     /* Zero out structure */
-  servAddr.sin_family      = AF_INET;             /* Internet address family */
-  servAddr.sin_addr.s_addr = inet_addr(ip);   /* Server IP address */
-  servAddr.sin_port        = htons(port); /* Server port */
+  memset(&sa, 0, sizeof(sa));     /* Zero out structure */
+  sa.sin_family      = AF_INET;             /* Internet address family */
+  inet_pton(AF_INET, ip, &(sa.sin_addr));
+  sa.sin_port        = htons(port); /* Convert endian for and set port */
   /* Establish the connection to the echo server */
-  if (connect(sock, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)
+  if (connect(sock, (struct sockaddr *) &sa, sizeof(sa)) < 0)
     DieWithError("Failed to connect to server"); 
   return sock;
 }
