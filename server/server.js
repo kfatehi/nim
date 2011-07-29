@@ -1,11 +1,19 @@
 #!/usr/bin/env node
 // SERVER
+Array.prototype.remove = function(e) {
+  for (var i = 0; i < this.length; i++) {
+    if (e == this[i]) { return this.splice(i, 1); }
+  }
+};
+
+DEBUG = (process.ARGV[2] == '--debug' ? true : false);
 var crypto = require('crypto');
 var shasum = crypto.createHash('sha1');
 var net = require('net');
 var http = require('http');
 var url = require('url');
 var redis = require("redis").createClient();
+
 process.on('uncaughtException', function (err) {
   console.error(err.stack);
 });
@@ -65,6 +73,7 @@ var generateId = function ()
   shasum.update(new Date().getTime().toString());
   return shasum.digest('hex').slice(0,6);
 }
+var clients = [];
 var server = net.createServer(function (socket) {
   socket.setEncoding("UTF8");
   socket.addListener("data", function (data) {
@@ -74,6 +83,7 @@ var server = net.createServer(function (socket) {
       var parts = data.split(':');
       var message = parts[0];
       var params = parts.slice(1, parts.length);
+      if (DEBUG) console.log(params);
       if (params[0] && params[0].length >= 6)
         var id = params[0].slice(0, 5);
       switch (message) {
@@ -94,6 +104,17 @@ var server = net.createServer(function (socket) {
         }
         case 'create_new_nimbus':{ doCreateNewNimbus(socket); break; }
         case 'seed_buffer':{ doSeedBuffer(data, id, socket); break; }
+        case 'c':{ // this is for debugging
+          if (DEBUG) {
+            var c_data = data.slice(2, data.length);
+            console.log("Broadcasting: "+c_data);
+            clients.forEach(function(s) {
+        			try { s.write(c_data); }
+        			catch (e) { clients.remove(s); }
+        		});
+            break;
+          }  
+        }
         default: {
           if (/HTTP/i.test(message)) {
             var id = message.match(/GET \/(.*) HTTP/)[1];
@@ -108,6 +129,13 @@ var server = net.createServer(function (socket) {
       }
     }
   });
+}).on("connection", function (socket) {
+  clients.push(socket);
+}).on("end", function (socket) {
+  clients.remove(socket);
 }).listen(8000, "0.0.0.0", function () {
-  console.log('Listening on port 8000');
+  if (DEBUG) 
+    console.log('DEBUG ENABLED\nListening on port 8000');
+  else
+    console.log('Listening on port 8000');
 });

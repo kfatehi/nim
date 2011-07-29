@@ -4,28 +4,25 @@
 #include <stdio.h>      /* for printf() and fprintf() */
 #include <stdlib.h>     /* for atoi() and exit() */
 #include <string.h>     /* for memset() */
-#include <sys/socket.h> /* for socket(), connect(), send(), and recv() */
-#include <sys/types.h>
-#include <arpa/inet.h>  /* for sockaddr_in and inet_addr() */
-#include <netdb.h>			/* for struct addrinfo */
-#include <unistd.h>     /* for close() */
-#include <ncurses.h>
 #include <errno.h>
 
+#include <ncurses.h>
+#include "sock.h"
+
 #define RCVBUFSIZE 32   /* Size of receive buffer */
-#define HOSTNAME "localhost"
+#define HOSTNAME "127.0.0.1"
 #define PORT "8000"
 
 void initGui(void);
-bool fileExists(const char *filename);
+int fileExists(const char *filename);
 void DieWithError(char *errorMessage);
-int establishConnection(char *hostname, char *port);
 void writeSocket(const int sock, const char *buffer);
 void readSocket(const int sock, char *buffer, const unsigned int buf_size);
 
 int main(int argc, char *argv[])
 {
-  int sockfd = establishConnection(HOSTNAME, PORT);
+  int sockfd;
+  connectSocket(&sockfd, HOSTNAME, PORT);
   char rcvBuffer[RCVBUFSIZE];
 
   if ( argc == 1 ){
@@ -71,26 +68,7 @@ void readSocket(const int sock, char *buffer, const unsigned int buf_size) {
   fprintf(stdout, "Bytes received: %d\n", bytesRcvd);
   fprintf(stdout, "Received: %s\n", buffer);
 }
-int establishConnection(char *hostname, char *port) {
-	int sockfd;
-	struct addrinfo hints, *res;
-	memset(&hints, 0, sizeof hints); // make sure struct is empty
-	hints.ai_family = AF_UNSPEC; // be ipv4/ipv6 agnostic
-	hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
-	printf("Trying to reach %s on port %s\n", hostname, port);
-	if (getaddrinfo(hostname, port, &hints, &res) != 0)
-		DieWithError("Failed to resolve host");
-	// FIXME walk the "res" linked list for a valid entry, first one may be invalid
-	if ((sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1)
-		DieWithError("Failed to initialize socket file descriptor");
-	printf("sockfd: %d .. errno? %d\n", sockfd, errno); 
-	if (connect(sockfd, res->ai_addr, res->ai_addrlen) != 0) {
-		fprintf(stderr, "errno: %d\n", errno);
-		DieWithError("Failed to connect to server");
-	}
-	freeaddrinfo(res);
-  return sockfd;
-}
+
 void initGui() {  
   char mesg[] = "Just a string";
   char str[80];
@@ -110,13 +88,13 @@ void initGui() {
   getch();     /* Wait for user input */
   endwin();     /* End curses mode      */
 }
-bool fileExists(const char *filename) {
+int fileExists(const char *filename) {
 	FILE *file;
 	if (file = fopen(filename, "r"))  {
 		fclose(file);
-		return true;
+		return 1;
 	}
-	return false;
+	return 0;
 }
 void DieWithError(char *errorMessage) {
   /* Error handling function */
