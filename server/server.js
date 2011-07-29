@@ -104,7 +104,7 @@ var server = net.createServer(function (socket) {
         }
         case 'create_new_nimbus':{ doCreateNewNimbus(socket); break; }
         case 'seed_buffer':{ doSeedBuffer(data, id, socket); break; }
-        case 'c':{ // this is for debugging
+        case 'c':{
           if (DEBUG) {
             var c_data = data.slice(2, data.length);
             console.log("Broadcasting: "+c_data);

@@ -1,23 +1,25 @@
-(unfinished / work in progress)
-Nim -- Node.js Vim
+(work in progress)
+
+Nim -- Network Vim
 ------------------
+
 What is Nim?
-  An ncurses-based collaborative text editor written in C and inspired by vim.
-  Nim functions as a pastie service for your terminal.
-  The server also allows retrieving of files through http request.
+  A collaborative text editor written in C and inspired by vim.
+  Nim wants to be a quick pastie and collab tool in the terminal.
   
 Features:
   - Asynchronous collaborative editing of a file (a "nimbus")
   - Users can create a new nimbus session from a text file
+      nim path/to/file
   - Users can join existing nimbus sessions via nimbus id:
-      ./nim oPfDkasd
+      nim oPfDkasd
   - Web users can view/download a nimbus buffer in the browser:
-      http://nimb.us/oPfDkasd
+      http://.../oPfDkasd
 
 Usage:
-  nim <file_path> <-- Create a new nimbus from a file
-  nim <nimbus_id> <-- Join an existing nimbus by id
-  nim             <-- Create a blank nimbus
+  nim path/to/file <-- Create a new nimbus from a file
+  nim <nimbus_id>  <-- Join an existing nimbus by id
+  nim              <-- Create a blank nimbus
 
 Controls:
   i Input mode
@@ -28,9 +30,5 @@ Controls:
   ? Chat mode
   Esc Return to normal mode
   
-Dependencies:
-  To use the client:
-    none, as it is implemented in C with ncurses (which you likely already have)
-  
-  To run the server:
+Server Dependencies:
     node_redis: npm install redis
