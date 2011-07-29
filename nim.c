@@ -5,27 +5,30 @@
 #include <stdlib.h>     /* for atoi() and exit() */
 #include <string.h>     /* for memset() */
 #include <sys/socket.h> /* for socket(), connect(), send(), and recv() */
+#include <sys/types.h>
 #include <arpa/inet.h>  /* for sockaddr_in and inet_addr() */
+#include <netdb.h>			/* for struct addrinfo */
 #include <unistd.h>     /* for close() */
 #include <ncurses.h>
+#include <errno.h>
 
 #define RCVBUFSIZE 32   /* Size of receive buffer */
-#define IP_ADDRESS "127.0.0.1"
-#define PORT 8000
+#define HOSTNAME "localhost"
+#define PORT "8000"
 
 void initGui(void);
 bool fileExists(const char *filename);
 void DieWithError(char *errorMessage);
-const int establishConnection(const char *ip, const int port);
+int establishConnection(char *hostname, char *port);
 void writeSocket(const int sock, const char *buffer);
 void readSocket(const int sock, char *buffer, const unsigned int buf_size);
 
 int main(int argc, char *argv[])
 {
-  const int sock = establishConnection(IP_ADDRESS, PORT);
+  int sockfd = establishConnection(HOSTNAME, PORT);
   char rcvBuffer[RCVBUFSIZE];
 
-  if ( argc == 1 ) {
+  if ( argc == 1 ){
 		// We are creating a blank, new nimbus
 		
 	} else if ( argc >= 2 ) {	
@@ -44,13 +47,13 @@ int main(int argc, char *argv[])
 		}
 	}  
 
-  writeSocket(sock, "create_new_nimbus");
+  writeSocket(sockfd, "create_new_nimbus");
 	
-  readSocket(sock, rcvBuffer, RCVBUFSIZE);
+  readSocket(sockfd, rcvBuffer, RCVBUFSIZE);
   
 
 
-  close(sock);
+  close(sockfd);
   exit(0);
 }
 
@@ -68,42 +71,25 @@ void readSocket(const int sock, char *buffer, const unsigned int buf_size) {
   fprintf(stdout, "Bytes received: %d\n", bytesRcvd);
   fprintf(stdout, "Received: %s\n", buffer);
 }
-const int establishConnection(const char *ip, const int port) {
-  int sock;
-
-  // we should use getaddrinfo to create the sockaddr struct
-  // thus being ipv4 and 6 agnostic
-  // http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html#getaddrinfo
-  // see the link for how to use it
-  // either way, here it is:
-  // int status;
-  // struct addrinfo hints;
-  // struct addrinfo *servinfo;  // will point to the results
-  //
-  // memset(&hints, 0, sizeof hints); // make sure the struct is empty
-  // hints.ai_family = AF_UNSPEC;     // don't care IPv4 or IPv6
-  // hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
-  //
-  // // get ready to connect
-  // status = getaddrinfo("www.example.net", "3490", &hints, &servinfo);
-  //
-  // // servinfo now points to a linked list of 1 or more struct addrinfos
-  //
-  // // etc.
-  
-  struct sockaddr_in sa; // Server address
-  /* Create a reliable, stream socket using TCP */
-  if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
-    DieWithError("Failed to initialize socket file descriptor");
-  /* Construct the server address structure */
-  memset(&sa, 0, sizeof(sa));     /* Zero out structure */
-  sa.sin_family      = AF_INET;             /* Internet address family */
-  inet_pton(AF_INET, ip, &(sa.sin_addr));
-  sa.sin_port        = htons(port); /* Convert endian for and set port */
-  /* Establish the connection to the echo server */
-  if (connect(sock, (struct sockaddr *) &sa, sizeof(sa)) < 0)
-    DieWithError("Failed to connect to server"); 
-  return sock;
+int establishConnection(char *hostname, char *port) {
+	int sockfd;
+	struct addrinfo hints, *res;
+	memset(&hints, 0, sizeof hints); // make sure struct is empty
+	hints.ai_family = AF_UNSPEC; // be ipv4/ipv6 agnostic
+	hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
+	printf("Trying to reach %s on port %s\n", hostname, port);
+	if (getaddrinfo(hostname, port, &hints, &res) != 0)
+		DieWithError("Failed to resolve host");
+	// FIXME walk the "res" linked list for a valid entry, first one may be invalid
+	if ((sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1)
+		DieWithError("Failed to initialize socket file descriptor");
+	printf("sockfd: %d .. errno? %d\n", sockfd, errno); 
+	if (connect(sockfd, res->ai_addr, res->ai_addrlen) != 0) {
+		fprintf(stderr, "errno: %d\n", errno);
+		DieWithError("Failed to connect to server");
+	}
+	freeaddrinfo(res);
+  return sockfd;
 }
 void initGui() {  
   char mesg[] = "Just a string";
