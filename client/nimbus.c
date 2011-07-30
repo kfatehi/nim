@@ -1,4 +1,5 @@
 #include "nimbus.h"
+// unused at the moment... might even be needless abstraction.
 int sendToNimbus(char *msg) {
 	writeSocket(sockfd, msg);
 }
