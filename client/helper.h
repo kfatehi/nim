@@ -14,10 +14,12 @@
 
 #define STDIN 0
 #define NIMBUS_ID_LEN 7
-#define RCVBUFSIZE 64
+#define RCVBUFSIZE 256
 
 extern int sockfd;
 extern char id[NIMBUS_ID_LEN];
+
+void startupHandler(int argc, char *argv[]);
 
 // Network
 void connectSocket(int *sockfd, char *hostname, char *port);

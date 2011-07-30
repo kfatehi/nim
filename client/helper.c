@@ -1,5 +1,21 @@
 #include "helper.h"
 
+void startupArgumentsHandler(int argc, char *argv[]) {
+  if ( argc == 1 ){ // no args, create blank new nimbus
+		//writeSocket(sockfd, "create_new_nimbus");
+    sendToNimbus("create_new_nimbus");
+    sleep(1);
+	} else if ( argc >= 2 ) {	
+		if ( (strcmp(argv[1],"-h") & strcmp(argv[1],"--help")) == 0 || argc > 2 ) {
+			fprintf(stderr, "Usage: \n%s\n%s /path/to/file\n%s <nimbus_id>\n", argv[0], argv[0], argv[0]);
+		} else if ( fileExists(argv[1]) == 1 )
+			fprintf(stdout, "Creating new nimbus from file %s\n", argv[1]);
+		else {
+			fprintf(stdout, "Asking server if %s is a valid nimbus id...\n", argv[1]);
+		}
+	}
+}
+
 void connectSocket(int *sockfd, char *hostname, char *port) {
 	struct addrinfo hints, *res;
 	memset(&hints, 0, sizeof hints); // make sure struct is empty
