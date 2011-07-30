@@ -4,20 +4,27 @@
 #include <stdio.h>      /* for printf() and fprintf() */
 #include <stdlib.h>     /* for atoi() and exit() */
 #include <string.h>     /* for memset() */
+#include <sys/poll.h>
 #include <sys/socket.h> /* for socket(), connect(), send(), and recv() */
-#include <sys/types.h>  /* i think getaddrinfo needs this */
+#include <sys/types.h>  /* addrinfo stuff and select() */
 #include <arpa/inet.h>  /* for sockaddr_in and inet_addr() */
 #include <netdb.h>			/* for struct addrinfo */
 #include <unistd.h>     /* for close() */
-#include <errno.h>
+#include <errno.h>    
 
-#define RCVBUFSIZE 32   /* Size of receive buffer */
+#define STDIN 0
+#define NIMBUS_ID_LEN 7
+#define RCVBUFSIZE 64
 
-int connectSocket(int *sockfd, char *hostname, char *port);
-// FIXME refactor the following 2 functions
-void writeSocket(const int sock, const char *buffer);
-void readSocket(const int sock, char *buffer, const unsigned int buf_size);
+extern int sockfd;
+extern char id[NIMBUS_ID_LEN];
 
+// Network
+void connectSocket(int *sockfd, char *hostname, char *port);
+int writeSocket(const int sock, const char *buffer);
+int readSocket(const int sock, char *buffer, const unsigned int buf_size);
+
+// Misc
 int fileExists(const char *filename);
 void dieWithError(char *errorMessage);
 
