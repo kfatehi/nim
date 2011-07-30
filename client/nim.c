@@ -3,15 +3,7 @@
    * http://github.com/keyvanfatehi/nim
    * Copyright (c) Keyvan Fatehi 2011
   \* * * * * * * * * * * * * * * * * * * * * * */ 
-
-#include "helper.h" // Provides convenient abstractions on annoying shit.
-#include "nimbus.h" // Provides wrapper functions for interfacing with a nimbus.
-
-#define HOSTNAME "127.0.0.1"
-#define PORT "8000"
-
-int sockfd; // socket file descriptor
-char id[NIMBUS_ID_LEN]; // nimbus id
+#include "nim.h"
 
 int main(int argc, char *argv[]) {
   struct pollfd ufds[2];
@@ -33,4 +25,15 @@ int main(int argc, char *argv[]) {
   }
   close(sockfd);
   exit(0);
+}
+
+void onSocketData() {
+  char buffer[RCVBUFSIZE];
+  int bytes;
+  bytes = readSocket(sockfd, buffer, RCVBUFSIZE);
+  printf("Received %d bytes. Data: %s\n", bytes, buffer);
+}
+
+void onKeyData() {
+  printf("Got key data, but it's line buffered so LOLOLOLOLOL all over your screen!\n");
 }

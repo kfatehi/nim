@@ -45,8 +45,6 @@ int readSocket(const int sock, char *buffer, const unsigned int buf_size) {
   if ((bytesRcvd = recv(sock, buffer, buf_size - 1, 0)) <= 0)
     fprintf(stderr, "recv() failed or connection closed prematurely");
   buffer[bytesRcvd] = '\0';  /* Terminate the string! */
-  fprintf(stdout, "Bytes received: %d\n", bytesRcvd);
-  fprintf(stdout, "Received: %s\n", buffer);
   return bytesRcvd;
 }
 
