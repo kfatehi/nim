@@ -4,6 +4,7 @@
 #include <stdio.h>      /* for printf(), fprintf(), STDIN */
 #include <stdlib.h>     /* for atoi() and exit() */
 #include <string.h>     /* for memset() */
+#include <termios.h>    /* for disabling line buffer on stdin */
 #include <sys/poll.h>
 #include <sys/socket.h> /* for socket(), connect(), send(), and recv() */
 #include <sys/types.h>  /* addrinfo stuff and select() */
@@ -11,6 +12,9 @@
 #include <netdb.h>			/* for struct addrinfo */
 #include <unistd.h>     /* for close() & STDIN_FILENO */
 #include <errno.h>    
+
+#define NB_ENABLE 0
+#define NB_DISABLE 1
 
 #define NIMBUS_ID_LEN 7
 #define BIGBUF 256
@@ -20,6 +24,7 @@ extern int sockfd;
 extern char id[NIMBUS_ID_LEN];
 
 void startupHandler(int argc, char *argv[]);
+void configTerminal(int state); // disable line buffering, echo, etc
 
 // Network
 void connectSocket(int *sockfd, char *hostname, char *port);

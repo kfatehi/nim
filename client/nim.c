@@ -7,15 +7,15 @@
 
 int main(int argc, char *argv[]) {
   struct pollfd ufds[2];
-
   connectSocket(&sockfd, HOSTNAME, PORT);
   startupArgumentsHandler(argc, argv);
 
   ufds[0].fd = sockfd;
-  ufds[0].events = POLLIN;
+  ufds[0].events = POLLIN | POLLOOB;
   ufds[1].fd = STDIN_FILENO;
   ufds[1].events = POLLIN;
 
+  configTerminal(NB_ENABLE);
   while(1) {
     switch(poll(ufds, 2, -1)) {
       case -1:{ perror("poll()"); break; }
@@ -26,6 +26,7 @@ int main(int argc, char *argv[]) {
     }
   }
   close(sockfd);
+  configTerminal(NB_DISABLE);
   exit(0);
 }
 

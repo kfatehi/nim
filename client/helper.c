@@ -16,6 +16,26 @@ void startupArgumentsHandler(int argc, char *argv[]) {
 	}
 }
 
+void configTerminal(int state) {
+  struct termios config;
+  if (!isatty(STDIN_FILENO) || (tcgetattr(STDIN_FILENO, &config) < 0))
+    perror("configTerminal()");
+  printf("Current vmin: %d", config.c_cc[VMIN]);
+  // get the terminal state
+  tcgetattr(STDIN_FILENO, &config);
+  if (state==NB_ENABLE) {
+    // remove echo, line buffer, and canonical mode flags
+    config.c_lflag &= ~(ECHO | ECHONL | ICANON | IEXTEN | ISIG);
+    // minimum number of input to read.
+    config.c_cc[VMIN] = 1;
+  } else if (state==NB_DISABLE) {
+    // set the flags back to normal
+    config.c_lflag &= (ECHO | ECHONL | ICANON | IEXTEN | ISIG);
+  }
+  // set the terminal attributes.
+  if(tcsetattr(STDIN_FILENO, TCSANOW, &config) < 0) perror("configTerminal()");
+}
+
 void connectSocket(int *sockfd, char *hostname, char *port) {
 	struct addrinfo hints, *res;
 	memset(&hints, 0, sizeof hints); // make sure struct is empty
