@@ -26,7 +26,7 @@ struct _terminal {
   char prevkey;
 };
 
-struct _cmnd {
+struct _cmnd { // Used for CMND Mode
   char *history;
   char buffer[CMND_BUF_SIZE-1];
   char res;

@@ -53,16 +53,30 @@ void onKeyData() {
     mvprintw(0, 0, "keycode: %d character: %s   ", c, str); 
     switch (context.current) {
       case EDIT:{
+        switch (c) {
+          case ESCAPE:{
+            switchContext(PREVIOUS);
+            break;
+          }
+        }
         // allow normal character to fall through to the editor
         break;
       }
       case CHAT:{
+        switch (c) {
+          case ESCAPE:{
+            switchContext(PREVIOUS);
+            break;
+          }
+        }
         // allow normal character to fall through to the chat message buffer
         break;
       }
       case TERM:{ 
         switch (c) {
           case ':':{
+            strcpy(cmnd.buffer, str); // prepare the buffer
+            printBottomLeft(cmnd.buffer);
             switchContext(CMND);
             // draw cmndBuffer and cursor at the bottom left like vim does
             break;
@@ -83,8 +97,7 @@ void onKeyData() {
             break;
           }
           case BACKSPACE:{
-            
-            cmnd.buffer[strlen(cmnd.buffer)-1] = '\0';
+            backSpaceBuffer(cmnd.buffer, LINES-1);
             break;
           }
           default:{
@@ -92,7 +105,7 @@ void onKeyData() {
               if (strlen(cmnd.buffer) < CMND_BUF_SIZE)
                 strcat(cmnd.buffer, str);
               else cmnd.buffer[0] = '\0'; // avoid buffer overflow crash
-            }// else printf("unmapped key in cmnd mode:\n keycode: %d character: %s\n", c, str);
+            } // else printf("unmapped key in cmnd mode:\n keycode: %d character: %s\n", c, str);
           }
         }
         printBottomLeft(cmnd.buffer);
@@ -107,7 +120,6 @@ void onKeyData() {
 }
 
 void executeCommand(char *str) {
-  writeSocket(sockfd, "Execute command....?");
   // : Command mode
   // :q Quit
   // :w Save
@@ -127,8 +139,6 @@ void switchContext(int n) {
     context.current = context.previous;
     context.previous = temp;
   } else {
-    if (n == CMND) strcpy(cmnd.buffer, ":"); // prepare the buffer
-    printBottomLeft(cmnd.buffer);
     context.previous = context.current;
     context.current = n;
   }

@@ -16,6 +16,13 @@ void printBottomLeft(char *msg) {
   mvprintw(LINES-1, 0, "%s", msg);
 }
 
+void backSpaceBuffer(char *buffer, int last_line_no) {
+  // Backspaces a buffer 
+  int new_len = strlen(buffer)-1;
+  buffer[new_len] = '\0';
+  mvaddch(last_line_no, new_len, ' ');
+}
+
 void startGui() {  
   initscr();
   printTopLeft("NIM");
