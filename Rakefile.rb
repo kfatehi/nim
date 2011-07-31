@@ -1,4 +1,4 @@
-DEPS = ""
+DEPS = "ncurses"
 SRC = Dir['client/*.c'].join ' '
 
 task :clean do

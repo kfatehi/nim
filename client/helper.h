@@ -12,6 +12,7 @@
 #include <netdb.h>			/* for struct addrinfo */
 #include <unistd.h>     /* for close() & STDIN_FILENO */
 #include <errno.h>    
+#include <ncurses.h>
 
 #define NB_ENABLE 0
 #define NB_DISABLE 1
