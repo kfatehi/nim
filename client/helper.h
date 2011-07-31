@@ -24,6 +24,7 @@
 extern int sockfd;
 extern char id[NIMBUS_ID_LEN];
 
+void initGui(void);
 void startupHandler(int argc, char *argv[]);
 void configTerminal(int state); // disable line buffering, echo, etc
 
