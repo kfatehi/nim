@@ -22,11 +22,14 @@ int main(int argc, char *argv[]) {
     switch(poll(ufds, 2, -1)) {
       case -1:{ perror("poll()"); break; }
       default:{
-        if (ufds[0].revents & POLLIN) onSocketData();
-        if (ufds[1].revents & POLLIN) onKeyData();
+        if (ufds[0].revents & POLLIN)
+          onSocketData();
+        if (ufds[1].revents & POLLIN)
+          onKeyData();
       }
     }
   } while(Running);
+  endwin();
   configTerminal(NB_DISABLE);
   close(sockfd);
   exit(0);
@@ -47,8 +50,7 @@ void onKeyData() {
   if ((bytes = read(STDIN_FILENO, &c, 1)) >= 0) {
     str[0] = c;
     // this will be our debug while we try to get ncurses working, so as not to print to stdout
-    writeSocket(sockfd, str);
-    if (c == CTRL_C) exit(1);
+    if (c == CTRL_C) Running = 0;
     // if (c == CTRL_R)
     //   redrawScreen();
     //printf("keycode: %d character: %s\n", c, str);
@@ -72,12 +74,12 @@ void onKeyData() {
         break;
       }
       case CMND:{
-        // printf("CMND MODE. Current Buffer: %s\n", cmnd.buffer);
         switch (c) {
           case ESCAPE:{
             switchContext(PREVIOUS);
             break;
           }
+          case RETURN:
           case NEWLINE:{
             executeCommand(cmnd.buffer);
             switchContext(PREVIOUS); // pop back into previous context
@@ -93,19 +95,27 @@ void onKeyData() {
             }// else printf("unmapped key in cmnd mode:\n keycode: %d character: %s\n", c, str);
           }
         }
+        printBottomLeft(cmnd.buffer);
         break;
       }
     }
+    refresh();
+    writeSocket(sockfd, str);
+    if (context.current == CMND)
+      writeSocket(sockfd, cmnd.buffer);
   } else perror("read(stdin)");
 }
 
 void executeCommand(char *str) {
+  writeSocket(sockfd, "Execute command....?");
   // : Command mode
   // :q Quit
   // :w Save
   // :x Save and quit
-  if (strcmp(str, ":q") == 0)
+  if (strcmp(str, ":q") == 0) {
     Running = 0; // flip killswitch
+    writeSocket(sockfd, "BYE");
+  }
 }
 // i Input mode
 // ? Chat mode
@@ -113,15 +123,15 @@ void executeCommand(char *str) {
 
 void switchContext(int n) {
   if (n == PREVIOUS) {
-    // if (context.previous) 
     int temp = context.current;
     context.current = context.previous;
     context.previous = temp;
   } else {
     if (n == CMND) strcpy(cmnd.buffer, ":"); // prepare the buffer
+    printBottomLeft(cmnd.buffer);
     context.previous = context.current;
     context.current = n;
-  } 
+  }
 }
 
 

@@ -1,19 +1,30 @@
 #include "helper.h"
 
+void printTopCenter(char *msg) {
+  mvprintw(0, (COLS-strlen(msg))/2, "%s", msg);
+}
+
+void printTopLeft(char *msg) {
+  mvprintw(0, 0, "%s", msg);
+}
+
+void printTopRight(char *msg) {
+  
+}
+
+void printBottomLeft(char *msg) {
+  mvprintw(LINES-1, 0, "%s", msg);
+}
+
 void startGui() {  
-  char mesg[] = "Just a string";
-  char str[80];
-  int row, col;
-  initscr();    // Start curses mode
-  getmaxyx(stdscr, row, col); // get the number of rows and columns
-  mvprintw(row/2, (col-strlen(mesg))/2, "%s", mesg);
+  initscr();
+  printTopLeft("NIM");
   refresh();
 }
 
 void startupArgumentsHandler(int argc, char *argv[]) {
   if ( argc == 1 ){ // no args, create blank new nimbus
-		//writeSocket(sockfd, "create_new_nimbus");
-    sendToNimbus("create_new_nimbus");
+		writeSocket(sockfd, "create_new_nimbus");
     sleep(1);
 	} else if ( argc >= 2 ) {	
 		if ( (strcmp(argv[1],"-h") & strcmp(argv[1],"--help")) == 0 || argc > 2 ) {

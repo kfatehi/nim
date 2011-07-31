@@ -5,6 +5,7 @@
 #define CTRL_C 3
 #define TAB 9
 #define NEWLINE 10
+#define RETURN 13
 #define ESCAPE 27
 #define BACKSPACE 127
 
