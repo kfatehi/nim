@@ -123,7 +123,7 @@ var server = net.createServer(function (socket) {
           }
           else {
             console.log('Unknown message: '+data);
-            socket.end('What? '+data);
+            if (!DEBUG) socket.end();
           }
         }
       }
