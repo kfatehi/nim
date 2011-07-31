@@ -24,8 +24,13 @@ task :console do
   sh "nc 127.0.0.1 8000" rescue puts "Server is offline."
 end
 
+task :kill do
+  sh "killall nim"
+end
+
 task :b => :build
 task :r => :run
 task :s => :server
 task :c => :console
+task :k => :kill
 task :default => [:build, :run]

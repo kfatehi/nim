@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
   startupArgumentsHandler(argc, argv);
 
   ufds[0].fd = sockfd;
-  ufds[0].events = POLLIN | POLLOOB;
+  ufds[0].events = POLLIN;
   ufds[1].fd = STDIN_FILENO;
   ufds[1].events = POLLIN;
 
