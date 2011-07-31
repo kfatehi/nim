@@ -15,6 +15,8 @@
 #define CHAT 3
 #define PREVIOUS -1
 
+#define CMND_BUF_SIZE 64
+
 // Structs
 struct _terminal {
   // hold the last character, so that we
@@ -26,7 +28,7 @@ struct _terminal {
 
 struct _cmnd {
   char *history;
-  char buffer[32];
+  char buffer[CMND_BUF_SIZE-1];
   char res;
 };
 

@@ -7,7 +7,7 @@
 
 int main(int argc, char *argv[]) {
   struct pollfd ufds[2];
-  connectSocket(&sockfd, HOSTNAME, PORT);
+  connectSocket(&sockfd, HOSTNAME, PORT); 
   startupArgumentsHandler(argc, argv);
 
   ufds[0].fd = sockfd;
@@ -43,17 +43,14 @@ void onSocketData() {
   // printf("SOCKET: Received %d bytes. Data: %s END SOCKET\n", bytes, buffer);
 }
 
-void onKeyData() {
+void onKeyData() { 
   char c;
   char str[2] = " \0";
   int bytes;
   if ((bytes = read(STDIN_FILENO, &c, 1)) >= 0) {
     str[0] = c;
-    // this will be our debug while we try to get ncurses working, so as not to print to stdout
     if (c == CTRL_C) Running = 0;
-    // if (c == CTRL_R)
-    //   redrawScreen();
-    //printf("keycode: %d character: %s\n", c, str);
+    mvprintw(0, 0, "keycode: %d character: %s   ", c, str); 
     switch (context.current) {
       case EDIT:{
         // allow normal character to fall through to the editor
@@ -63,7 +60,7 @@ void onKeyData() {
         // allow normal character to fall through to the chat message buffer
         break;
       }
-      case TERM:{
+      case TERM:{ 
         switch (c) {
           case ':':{
             switchContext(CMND);
@@ -86,12 +83,15 @@ void onKeyData() {
             break;
           }
           case BACKSPACE:{
-            printf("backspace");
+            
+            cmnd.buffer[strlen(cmnd.buffer)-1] = '\0';
             break;
           }
           default:{
             if (c >= 32) {
-              strcat(cmnd.buffer, str);
+              if (strlen(cmnd.buffer) < CMND_BUF_SIZE)
+                strcat(cmnd.buffer, str);
+              else cmnd.buffer[0] = '\0'; // avoid buffer overflow crash
             }// else printf("unmapped key in cmnd mode:\n keycode: %d character: %s\n", c, str);
           }
         }
