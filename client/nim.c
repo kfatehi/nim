@@ -15,8 +15,9 @@ int main(int argc, char *argv[]) {
   ufds[1].fd = STDIN_FILENO;
   ufds[1].events = POLLIN;
 
+  context.current = TERM;
   configTerminal(NB_ENABLE);
-  while(1) {
+  do {
     switch(poll(ufds, 2, -1)) {
       case -1:{ perror("poll()"); break; }
       default:{
@@ -24,9 +25,9 @@ int main(int argc, char *argv[]) {
         if (ufds[1].revents & POLLIN) onKeyData();
       }
     }
-  }
-  close(sockfd);
+  } while(Running);
   configTerminal(NB_DISABLE);
+  close(sockfd);
   exit(0);
 }
 
@@ -35,22 +36,20 @@ void onSocketData() {
   int bytes;
   memset(buffer, 0, BIGBUF);
   bytes = readSocket(sockfd, buffer, BIGBUF);
-  printf("SOCKET: Received %d bytes. Data: %s END SOCKET\n", bytes, buffer);
+  // printf("SOCKET: Received %d bytes. Data: %s END SOCKET\n", bytes, buffer);
 }
 
 void onKeyData() {
-  // char buffer[SMALLBUF];
-  // int bytes;
-  // memset(buffer, 0, SMALLBUF);
-  // bytes = read(STDIN_FILENO, buffer, SMALLBUF);
-  // printf("STDIN: Receieved %d bytes. Data: %s END STDIN\n", bytes, buffer);
   char c;
   char str[2] = " \0";
   int bytes;
   if ((bytes = read(STDIN_FILENO, &c, 1)) >= 0) {
     str[0] = c;
-    printf("keycode: %d character: %s\n", c, str);
-    switch (NimContext) {
+    if (c == CTRL_C) exit(1);
+    // if (c == CTRL_R)
+    //   redrawScreen();
+    //printf("keycode: %d character: %s\n", c, str);
+    switch (context.current) {
       case EDIT:{
         // allow normal character to fall through to the editor
         break;
@@ -62,34 +61,33 @@ void onKeyData() {
       case TERM:{
         switch (c) {
           case ':':{
-            prevContext = NimContext;
-            NimContext = CMND;
-            strcpy(cmndBuffer, ""); // prepare the buffer  
-            printf("CMND MODE\n");
-            // draw ':' and cursor at the bottom left like vim does
+            switchContext(CMND);
+            // draw cmndBuffer and cursor at the bottom left like vim does
             break;
           }
         }
         break;
       }
       case CMND:{
+        // printf("CMND MODE. Current Buffer: %s\n", cmnd.buffer);
         switch (c) {
-          case '\e':{ // ESCAPE
-            NimContext = prevContext;
-            printf("END CMND MODE\n");
+          case ESCAPE:{
+            switchContext(PREVIOUS);
             break;
           }
-          case '\n':{
-            // "execute" the built up command buffer
-            // clear the command buffer
-            NimContext = prevContext; // pop back into previous context
+          case NEWLINE:{
+            executeCommand(cmnd.buffer);
+            switchContext(PREVIOUS); // pop back into previous context
+            break;
+          }
+          case BACKSPACE:{
+            printf("backspace");
             break;
           }
           default:{
             if (c >= 32) {
-              strcat(cmndBuffer, str);
-              printf("CMNDBUFFER: %s\n", cmndBuffer);
-            } else printf("unmapped key in cmnd mode:\n keycode: %d character: %s\n", c, str);
+              strcat(cmnd.buffer, str);
+            }// else printf("unmapped key in cmnd mode:\n keycode: %d character: %s\n", c, str);
           }
         }
         break;
@@ -98,14 +96,29 @@ void onKeyData() {
   } else perror("read(stdin)");
 }
 
+void executeCommand(char *str) {
+  // : Command mode
+  // :q Quit
+  // :w Save
+  // :x Save and quit
+  if (strcmp(str, ":q") == 0)
+    Running = 0; // flip killswitch
+}
 // i Input mode
-// : Command mode
-// :q Quit
-// :w Save
-// :x Save and quit
 // ? Chat mode
 // Esc Return to normal mode
 
-
+void switchContext(int n) {
+  if (n == PREVIOUS) {
+    // if (context.previous) 
+    int temp = context.current;
+    context.current = context.previous;
+    context.previous = temp;
+  } else {
+    if (n == CMND) strcpy(cmnd.buffer, ":"); // prepare the buffer
+    context.previous = context.current;
+    context.current = n;
+  } 
+}
 
 
