@@ -16,7 +16,7 @@ end
 
 task :server do
 	puts "Starting redis and the nimbus node.js server ... "
-	Process.fork { sh "redis-server > /dev/null" rescue nil }
+	Process.fork { sh "redis-server > redis.log" rescue nil }
 	sh "node server/server.js --debug" rescue nil
 end
 
