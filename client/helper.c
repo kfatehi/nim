@@ -20,7 +20,6 @@ void configTerminal(int state) {
   struct termios config;
   if (!isatty(STDIN_FILENO) || (tcgetattr(STDIN_FILENO, &config) < 0))
     perror("configTerminal()");
-  printf("Current vmin: %d", config.c_cc[VMIN]);
   // get the terminal state
   tcgetattr(STDIN_FILENO, &config);
   if (state==NB_ENABLE) {
