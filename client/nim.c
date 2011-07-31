@@ -17,6 +17,7 @@ int main(int argc, char *argv[]) {
 
   context.current = TERM;
   configTerminal(NB_ENABLE);
+  startGui();
   do {
     switch(poll(ufds, 2, -1)) {
       case -1:{ perror("poll()"); break; }
@@ -45,6 +46,8 @@ void onKeyData() {
   int bytes;
   if ((bytes = read(STDIN_FILENO, &c, 1)) >= 0) {
     str[0] = c;
+    // this will be our debug while we try to get ncurses working, so as not to print to stdout
+    writeSocket(sockfd, str);
     if (c == CTRL_C) exit(1);
     // if (c == CTRL_R)
     //   redrawScreen();
