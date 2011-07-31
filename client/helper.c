@@ -2,8 +2,7 @@
 
 void startupArgumentsHandler(int argc, char *argv[]) {
   if ( argc == 1 ){ // no args, create blank new nimbus
-		//writeSocket(sockfd, "create_new_nimbus");
-    sendToNimbus("create_new_nimbus");
+		writeSocket(sockfd, "create_new_nimbus");
     sleep(1);
 	} else if ( argc >= 2 ) {	
 		if ( (strcmp(argv[1],"-h") & strcmp(argv[1],"--help")) == 0 || argc > 2 ) {

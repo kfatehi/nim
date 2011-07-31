@@ -1,8 +1,9 @@
+// Only nim.c should include this.
 #ifndef NIM_H
 #define NIM_H
 
 #include "helper.h" // Provides convenient abstractions on annoying shit.
-#include "nimbus.h" // Provides wrapper functions for interfacing with a nimbus.
+#include "gui.h" // All the nasty ncurses stuff can hopefully hide here
 
 #define HOSTNAME "127.0.0.1"
 #define PORT "8000"
