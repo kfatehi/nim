@@ -26,6 +26,7 @@ void connectSocket(int *sockfd, char *hostname, char *port) {
 	// FIXME walk the "res" linked list for a valid entry, first one may be invalid
 	if ((*sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1)
 		dieWithError("Failed to create socket descriptor");
+  fprintf(stdout, "Connecting to %s on port %s\n", hostname, port);
 	if (connect(*sockfd, res->ai_addr, res->ai_addrlen) != 0)
 	  dieWithError("Failed to connect");
 	freeaddrinfo(res);
@@ -56,6 +57,19 @@ int fileExists(const char *filename) {
 	}
 	return 1;
 }
+
+// int getFileContents(const char *filename) {
+//   FILE *f;
+//  
+//   char buffer[11];
+//   if (f = fopen("fred.txt", "rt"))
+//   {
+//     fread(buffer, 1, 10, f);
+//     buffer[10] = 0;
+//     fclose(f);
+//     printf("first 10 characters of the file:\n%s\n", buffer);
+//   }
+// }
 
 void dieWithError(char *errorMessage) {
   /* Error handling function */

@@ -1,7 +1,7 @@
 #ifndef HELPER_H
 #define HELPER_H
 
-#include <stdio.h>      /* for printf() and fprintf() */
+#include <stdio.h>      /* for printf(), fprintf(), STDIN */
 #include <stdlib.h>     /* for atoi() and exit() */
 #include <string.h>     /* for memset() */
 #include <sys/poll.h>
@@ -9,12 +9,12 @@
 #include <sys/types.h>  /* addrinfo stuff and select() */
 #include <arpa/inet.h>  /* for sockaddr_in and inet_addr() */
 #include <netdb.h>			/* for struct addrinfo */
-#include <unistd.h>     /* for close() */
+#include <unistd.h>     /* for close() & STDIN_FILENO */
 #include <errno.h>    
 
-#define STDIN 0
 #define NIMBUS_ID_LEN 7
-#define RCVBUFSIZE 256
+#define BIGBUF 256
+#define SMALLBUF 32
 
 extern int sockfd;
 extern char id[NIMBUS_ID_LEN];

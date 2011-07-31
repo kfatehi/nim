@@ -7,16 +7,18 @@
 
 int main(int argc, char *argv[]) {
   struct pollfd ufds[2];
-  fprintf(stdout, "Connecting to nimbus provider at %s on port %s\n", HOSTNAME, PORT);
+
   connectSocket(&sockfd, HOSTNAME, PORT);
   startupArgumentsHandler(argc, argv);
+
   ufds[0].fd = sockfd;
   ufds[0].events = POLLIN;
-  ufds[1].fd = STDIN;
+  ufds[1].fd = STDIN_FILENO;
   ufds[1].events = POLLIN;
+
   while(1) {
     switch(poll(ufds, 2, -1)) {
-      case -1:{ perror("poll"); break; }
+      case -1:{ perror("poll()"); break; }
       default:{
         if (ufds[0].revents & POLLIN) onSocketData();
         if (ufds[1].revents & POLLIN) onKeyData();
@@ -28,12 +30,17 @@ int main(int argc, char *argv[]) {
 }
 
 void onSocketData() {
-  char buffer[RCVBUFSIZE];
+  char buffer[BIGBUF];
   int bytes;
-  bytes = readSocket(sockfd, buffer, RCVBUFSIZE);
-  printf("Received %d bytes. Data: %s\n", bytes, buffer);
+  memset(buffer, 0, BIGBUF);
+  bytes = readSocket(sockfd, buffer, BIGBUF);
+  printf("SOCKET: Received %d bytes. Data: %s END SOCKET\n", bytes, buffer);
 }
 
 void onKeyData() {
-  printf("Got key data, but it's line buffered so LOLOLOLOLOL all over your screen!\n");
+  char buffer[SMALLBUF];
+  int bytes;
+  memset(buffer, 0, SMALLBUF);
+  bytes = read(STDIN_FILENO, buffer, SMALLBUF);
+  printf("STDIN: Receieved %d bytes. Data: %s END STDIN\n", bytes, buffer);
 }

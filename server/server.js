@@ -106,7 +106,7 @@ var server = net.createServer(function (socket) {
         case 'seed_buffer':{ doSeedBuffer(data, id, socket); break; }
         case 'c':{
           if (DEBUG) {
-            var c_data = data.slice(2, data.length);
+            var c_data = data.slice(2, data.length-1); // remove c: and \n
             console.log("Broadcasting: "+c_data);
             clients.forEach(function(s) {
         			try { s.write(c_data); }

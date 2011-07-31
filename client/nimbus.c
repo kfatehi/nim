@@ -3,35 +3,8 @@ int sendToNimbus(char *msg) {
 	writeSocket(sockfd, msg);
 }
 int getFromNimbus(char *msg) {
-	readSocket(sockfd, msg, RCVBUFSIZE);
+	readSocket(sockfd, msg, BIGBUF);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
