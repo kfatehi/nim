@@ -9,16 +9,16 @@
 #define PORT "8000"
 
 // Contexts
-#define TERM 0
+#define ROOT 0
 #define CMND 1
 #define EDIT 2
 #define CHAT 3
 #define PREVIOUS -1
 
-#define CMND_BUF_SIZE 64
+#define CMND_BUF_SIZE 512
 
 // Structs
-struct _terminal {
+struct _terminal { // i may use this for catching escape sequences
   // hold the last character, so that we
   // can detect and react correctly to escape sequences.
   // without losing function of the escape key alone
@@ -26,10 +26,13 @@ struct _terminal {
   char prevkey;
 };
 
-struct _cmnd { // Used for CMND Mode
+struct _edit { // Used in the editor context
+  char *buffer;
+};
+
+struct _cmnd { // Used in the command context
   char *history;
   char buffer[CMND_BUF_SIZE-1];
-  char res;
 };
 
 struct _context {
@@ -41,6 +44,7 @@ struct _context {
 char Running = 1; // flipping this kills the loop
 struct _terminal;
 struct _context context;
+struct _edit edit;
 struct _cmnd cmnd;
 
 int sockfd; // socket file descriptor

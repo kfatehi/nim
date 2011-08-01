@@ -24,10 +24,10 @@
 extern int sockfd;
 extern char id[NIMBUS_ID_LEN];
 
-void startGui(void);
 void startupHandler(int argc, char *argv[]);
 void configTerminal(int state); // disable line buffering, echo, etc
 void backSpaceBuffer(char *buffer, int last_line_no);
+void clearLine(int line_no);
 
 // Network
 void connectSocket(int *sockfd, char *hostname, char *port);

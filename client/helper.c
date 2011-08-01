@@ -9,7 +9,7 @@ void printTopLeft(char *msg) {
 }
 
 void printTopRight(char *msg) {
-  
+  mvprintw(0, (COLS-strlen(msg)), "%s", msg);
 }
 
 void printBottomLeft(char *msg) {
@@ -23,16 +23,18 @@ void backSpaceBuffer(char *buffer, int last_line_no) {
   mvaddch(last_line_no, new_len, ' ');
 }
 
-void startGui() {  
-  initscr();
-  printTopLeft("NIM");
-  refresh();
+void clearLine(int line_no) {
+  int width = COLS;
+  char blank[width];
+  int i;
+  for (i = 0; i < width; i++) blank[i] = ' ';
+  blank[width] = '\0';
+  mvprintw(line_no, 0, blank);	// Move and print string
 }
 
 void startupArgumentsHandler(int argc, char *argv[]) {
   if ( argc == 1 ){ // no args, create blank new nimbus
 		writeSocket(sockfd, "create_new_nimbus");
-    sleep(1);
 	} else if ( argc >= 2 ) {	
 		if ( (strcmp(argv[1],"-h") & strcmp(argv[1],"--help")) == 0 || argc > 2 ) {
 			fprintf(stderr, "Usage: \n%s\n%s /path/to/file\n%s <nimbus_id>\n", argv[0], argv[0], argv[0]);
@@ -73,7 +75,7 @@ void connectSocket(int *sockfd, char *hostname, char *port) {
 	// FIXME walk the "res" linked list for a valid entry, first one may be invalid
 	if ((*sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1)
 		dieWithError("Failed to create socket descriptor");
-  fprintf(stdout, "Connecting to %s on port %s\n", hostname, port);
+  // fprintf(stdout, "Connecting to %s on port %s\n", hostname, port);
 	if (connect(*sockfd, res->ai_addr, res->ai_addrlen) != 0)
 	  dieWithError("Failed to connect");
 	freeaddrinfo(res);

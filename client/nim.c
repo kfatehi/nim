@@ -7,17 +7,17 @@
 
 int main(int argc, char *argv[]) {
   struct pollfd ufds[2];
-  connectSocket(&sockfd, HOSTNAME, PORT); 
-  startupArgumentsHandler(argc, argv);
-
   ufds[0].fd = sockfd;
   ufds[0].events = POLLIN;
   ufds[1].fd = STDIN_FILENO;
   ufds[1].events = POLLIN;
-
-  context.current = TERM;
   configTerminal(NB_ENABLE);
-  startGui();
+  initscr();
+  switchContext(ROOT);
+  printTopCenter("NIM");
+  connectSocket(&sockfd, HOSTNAME, PORT);
+  startupArgumentsHandler(argc, argv);
+  refresh();
   do {
     switch(poll(ufds, 2, -1)) {
       case -1:{ perror("poll()"); break; }
@@ -41,6 +41,8 @@ void onSocketData() {
   memset(buffer, 0, BIGBUF);
   bytes = readSocket(sockfd, buffer, BIGBUF);
   // printf("SOCKET: Received %d bytes. Data: %s END SOCKET\n", bytes, buffer);
+  // switch case on the messages
+  // refresh();
 }
 
 void onKeyData() { 
@@ -72,13 +74,18 @@ void onKeyData() {
         // allow normal character to fall through to the chat message buffer
         break;
       }
-      case TERM:{ 
+      case ROOT:{
         switch (c) {
           case ':':{
-            strcpy(cmnd.buffer, str); // prepare the buffer
-            printBottomLeft(cmnd.buffer);
             switchContext(CMND);
-            // draw cmndBuffer and cursor at the bottom left like vim does
+            break;
+          }
+          case '?':{
+            switchContext(CHAT);
+            break;
+          }
+          case 'i':{
+            switchContext(EDIT);
             break;
           }
         }
@@ -101,14 +108,16 @@ void onKeyData() {
             break;
           }
           default:{
-            if (c >= 32) {
-              if (strlen(cmnd.buffer) < CMND_BUF_SIZE)
-                strcat(cmnd.buffer, str);
-              else cmnd.buffer[0] = '\0'; // avoid buffer overflow crash
-            } // else printf("unmapped key in cmnd mode:\n keycode: %d character: %s\n", c, str);
+            if (NUMLETTER(c)) {
+              // If there is space in the terminal, add the character to the command buffer
+              if (strlen(cmnd.buffer) < COLS-1) strcat(cmnd.buffer, str);
+              // FIXME make this behave like vim (move the other shit up one line, etc)
+              // For now we just don't let editing happen past the end of the row
+            }
           }
         }
-        printBottomLeft(cmnd.buffer);
+        if (context.current == CMND) // Make sure we didn't switch out of CMND mode already.
+          printBottomLeft(cmnd.buffer);
         break;
       }
     }
@@ -120,28 +129,42 @@ void onKeyData() {
 }
 
 void executeCommand(char *str) {
-  // : Command mode
-  // :q Quit
   // :w Save
   // :x Save and quit
-  if (strcmp(str, ":q") == 0) {
+  if (strcmp(str, ":q") == 0)
     Running = 0; // flip killswitch
-    writeSocket(sockfd, "BYE");
-  }
 }
-// i Input mode
-// ? Chat mode
-// Esc Return to normal mode
 
 void switchContext(int n) {
   if (n == PREVIOUS) {
+    if (context.current == CMND) clearLine(LINES-1);
     int temp = context.current;
     context.current = context.previous;
     context.previous = temp;
-  } else {
+  } else if (n == CMND) {
     context.previous = context.current;
+    context.current = CMND;
+    // Setup command buffer
+    cmnd.buffer[0] = ':';
+    cmnd.buffer[1] = '\0';
+    printBottomLeft(cmnd.buffer);
+  } else if (n == EDIT) {
+    context.previous = context.current;
+    context.current = EDIT;
+    // Setup or get into the edit buffer...
+    // I would want to maintain cursor last position as well.
+  } else if (n == CHAT) {
+    context.previous = context.current;
+    context.current = CHAT;
+    // Dont know how i want to do this yet.
+    // Perhaps a new ncurses window overlay we can hide/show would be good.
+  } else if (n == ROOT) {
     context.current = n;
   }
+  if (context.current == CMND) printTopRight("CMND");
+  else if (context.current == EDIT) printTopRight("EDIT");
+  else if (context.current == CHAT) printTopRight("CHAT");
+  else if (context.current == ROOT) printTopRight("ROOT");
 }
 
 
