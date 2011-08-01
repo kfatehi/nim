@@ -5,17 +5,19 @@
   \* * * * * * * * * * * * * * * * * * * * * * */ 
 #include "nim.h"
 
+int socketMode;
+
 int main(int argc, char *argv[]) {
   struct pollfd ufds[2];
-  ufds[0].fd = sockfd;
-  ufds[0].events = POLLIN;
-  ufds[1].fd = STDIN_FILENO;
-  ufds[1].events = POLLIN;
   configTerminal(NB_ENABLE);
   initscr();
   switchContext(ROOT);
   printTopCenter("NIM");
   connectSocket(&sockfd, HOSTNAME, PORT);
+  ufds[0].fd = sockfd;
+  ufds[0].events = POLLIN;
+  ufds[1].fd = STDIN_FILENO;
+  ufds[1].events = POLLIN;
   startupArgumentsHandler(argc, argv);
   refresh();
   do {
@@ -40,9 +42,20 @@ void onSocketData() {
   int bytes;
   memset(buffer, 0, BIGBUF);
   bytes = readSocket(sockfd, buffer, BIGBUF);
-  // printf("SOCKET: Received %d bytes. Data: %s END SOCKET\n", bytes, buffer);
-  // switch case on the messages
-  // refresh();
+  if (socketMode == OVERSIZE) {
+    // Use socketMode to capture long seeds that exceed BIGBUF
+  } else {
+    char delims[3] = ":>";
+    char *result = NULL;
+    result = strtok(buffer, delims);
+    int i;
+    for (i = 0; ((result != NULL) && (i > -1)); i++) {
+      result = strtok(NULL, delims);
+      if strcmp(result
+    }
+  }
+
+  refresh();
 }
 
 void onKeyData() { 
@@ -76,6 +89,10 @@ void onKeyData() {
       }
       case ROOT:{
         switch (c) {
+          case 'n':{ // navigation buttons.
+            switchContext(CMND);
+            break;
+          }
           case ':':{
             switchContext(CMND);
             break;
@@ -136,8 +153,8 @@ void executeCommand(char *str) {
 }
 
 void switchContext(int n) {
+  clearLine(LINES-1);
   if (n == PREVIOUS) {
-    if (context.current == CMND) clearLine(LINES-1);
     int temp = context.current;
     context.current = context.previous;
     context.previous = temp;

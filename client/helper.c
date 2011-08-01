@@ -34,6 +34,7 @@ void clearLine(int line_no) {
 
 void startupArgumentsHandler(int argc, char *argv[]) {
   if ( argc == 1 ){ // no args, create blank new nimbus
+    printBottomLeft("Creating new nimbus, please wait.");
 		writeSocket(sockfd, "create_new_nimbus");
 	} else if ( argc >= 2 ) {	
 		if ( (strcmp(argv[1],"-h") & strcmp(argv[1],"--help")) == 0 || argc > 2 ) {
