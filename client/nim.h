@@ -15,16 +15,17 @@
 #define EDIT 2
 #define CHAT 3
 
-#define CMND_BUF_SIZE 512
+// Socket Preconditions
+#define NONE 0
+//#define REMOTE_ERROR -1 // error:xxxxxxxxxx
+//#define NIMBUS_CREATED 1 // new_nimbus:xxxxxx
+//#define INCOMING_SEED 2 // seed_buffer:...
+#define OVERFLOW_SEED 10 // expecting more data
+//#define END_OF_SEED 3 // ...:end_seed
+//#define SEED_CONFIRM 4 // buffer_seed_ok
 
-// Incoming Message Type
-char messageType;
-#define REMOTE_ERROR -1 // error:xxxxxxxxxx
-#define NIMBUS_CREATED 0 // new_nimbus:xxxxxx
-#define INCOMING_SEED 1 // seed_buffer:...
-#define OVERSIZE 10 // expecting more data
-#define END_OF_SEED 2 // ...:end_seed
-#define SEED_CONFIRM 3 // buffer_seed_ok
+
+#define EDITOR_BUF_SIZE 4092
 
 // Structs
 struct _terminal { // i may use this for catching escape sequences
@@ -36,12 +37,14 @@ struct _terminal { // i may use this for catching escape sequences
 };
 
 struct _edit { // Used in the editor context
-  char *buffer;
+  char buffer[EDITOR_BUF_SIZE]; // i dont want a limit on file size, nor do i want to hardcode, damn
+  // maybe we should use a pointer array to lines ? hmmm a doubly linked list even....
+  // this could get complicated.....
 };
 
 struct _cmnd { // Used in the command context
-  char *history;
-  char buffer[CMND_BUF_SIZE-1];
+  char *history[50]; // 50 strings can be held. FIXME use a linked list
+  char buffer[512];
 };
 
 struct _context {
@@ -50,14 +53,17 @@ struct _context {
 };
 
 // Globals
+char socketPrecondition = NONE; // used when receiving socket data
 char Running = 1; // flipping this kills the loop
 struct _terminal;
 struct _context context;
-struct _edit edit;
 struct _cmnd cmnd;
+struct _edit edit;
 
 int sockfd; // socket file descriptor
 char id[NIMBUS_ID_LEN]; // nimbus id
+
+void editorSeeded(void);
 
 void onSocketData(void);
 void onKeyData(void);

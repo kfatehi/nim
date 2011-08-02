@@ -1,7 +1,7 @@
 *.log
 .DS_Store
 *.o
-a.out
+*.out
 nim
 *Autosaved*
 *.swp

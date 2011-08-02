@@ -17,7 +17,7 @@
 #define NB_ENABLE 0
 #define NB_DISABLE 1
 
-#define NIMBUS_ID_LEN 7
+#define NIMBUS_ID_LEN 16
 #define BIGBUF 256
 #define SMALLBUF 32
 

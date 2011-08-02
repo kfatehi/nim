@@ -5,7 +5,6 @@
   \* * * * * * * * * * * * * * * * * * * * * * */ 
 #include "nim.h"
 
-
 int main(int argc, char *argv[]) {
   struct pollfd ufds[2];
   configTerminal(NB_ENABLE);
@@ -36,23 +35,57 @@ int main(int argc, char *argv[]) {
   exit(0);
 }
 
+void editorSeeded() {
+  clearLine(LINES-1);
+  printBottomLeft("Editor seeded!");
+}
+void newNimbusCreated() {
+  char msg[48] = "New empty nimbus created: ";
+  strcat(msg, id);
+  clearLine(LINES-1);
+  printBottomLeft(msg);
+}
+
 void onSocketData() {
   char buffer[BIGBUF];
   int bytes;
   memset(buffer, 0, BIGBUF);
   bytes = readSocket(sockfd, buffer, BIGBUF);
 
-  if (socketMode == OVERSIZE) {
-    // Use socketMode to capture long seeds that exceed BIGBUF
-  } else {
-    char delims[3] = ":>";
-    char *result = NULL;
-    result = strtok(buffer, delims);
-    int message;
-    for (result != NULL) {
-      result = strtok(NULL, delims);
-      switch 
-      if strcmp(result, "new_nimbus") 
+  switch (socketPrecondition) {
+    case NONE: {
+      char *message = NULL;
+      message = strtok(buffer, ":");
+      if (strcmp(message, "new_nimbus") == 0) {          
+        strcpy(id, strtok(NULL, ":"));
+        newNimbusCreated();
+      } else if (strcmp(message, "seed_buffer") == 0) {
+        edit.buffer[0] = '\0';
+        if (strstr(message, "end_seed")) { // buffer contains :end_seed
+          buffer[bytes-9] = '\0'; // remove :end_seed
+          editorSeeded();
+        } else socketPrecondition = OVERFLOW_SEED;
+        strcat(edit.buffer, buffer);
+      } else if (strcmp(message, "error") == 0) {
+        char error[64] = "error: ";
+        strcat(error, strtok(NULL, ":"));
+        printBottomLeft(error);
+      }
+      break;
+    }
+    case OVERFLOW_SEED: {
+      if (strstr(buffer, "end_seed")) { // buffer contains :end_seed
+        buffer[bytes-9] = '\0'; // remove :end_seed
+        socketPrecondition = NONE;
+        editorSeeded();
+      } // FIXME problems if a break occurs between the :end_seed so we never see it
+      if (strlen(edit.buffer) > (EDITOR_BUF_SIZE-32)) // FIXME bad solution for buffer overflow
+        strcat(edit.buffer, buffer); 
+      else {
+        strcat(edit.buffer, " ~BUFFER OVERFLOW~ ");
+        socketPrecondition = NONE; editorSeeded();
+      }
+      break;
     }
   }
 
