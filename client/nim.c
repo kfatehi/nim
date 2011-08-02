@@ -7,18 +7,33 @@
 
 int main(int argc, char *argv[]) {
   struct pollfd ufds[2];
-  configTerminal(NB_ENABLE);
-  initscr();
-  switchContext(ROOT);
-  printTopCenter("NIM");
-  connectSocket(&sockfd, HOSTNAME, PORT);
   ufds[0].fd = sockfd;
   ufds[0].events = POLLIN;
   ufds[1].fd = STDIN_FILENO;
   ufds[1].events = POLLIN;
-  startupArgumentsHandler(argc, argv);
-  refresh();
-  do {
+  connectSocket(&sockfd, HOSTNAME, PORT);
+  if ( argc == 1 ){ // no args, create blank new nimbus
+    startgui();
+    printBottomLeft("Creating new nimbus, please wait.");
+		writeSocket(sockfd, "create_new_nimbus");
+	} else if ( argc >= 2 ) {	
+		if ( (strcmp(argv[1],"-h") & strcmp(argv[1],"--help")) == 0 || argc > 2 ) {
+			fprintf(stderr, "Usage: \n%s\n%s /path/to/file\n%s <nimbus_id>\n", argv[0], argv[0], argv[0]);
+      exit(1);
+		} else {
+		  if ( fileExists(argv[1]) == 1 ) {
+        socketPrecondition = WAITING_TO_SEED;
+  		  fprintf(stdout, "Creating new nimbus from file %s\n", argv[1]);
+        strcpy(filePath, argv[1]);
+        startgui();
+        writeSocket(sockfd, "create_new_nimbus");
+  		} else {
+  			fprintf(stdout, "Asking server if %s is a valid nimbus id...\nnot implemented\n", argv[1]);
+  			// not implemented
+  		}
+		}
+	}
+	do {
     switch(poll(ufds, 2, -1)) {
       case -1:{ perror("poll()"); break; }
       default:{
@@ -35,17 +50,6 @@ int main(int argc, char *argv[]) {
   exit(0);
 }
 
-void editorSeeded() {
-  clearLine(LINES-1);
-  printBottomLeft("Editor seeded!");
-}
-void newNimbusCreated() {
-  char msg[48] = "New empty nimbus created: ";
-  strcat(msg, id);
-  clearLine(LINES-1);
-  printBottomLeft(msg);
-}
-
 void onSocketData() {
   char buffer[BIGBUF];
   int bytes;
@@ -53,11 +57,16 @@ void onSocketData() {
   bytes = readSocket(sockfd, buffer, BIGBUF);
 
   switch (socketPrecondition) {
+    case WAITING_TO_SEED:
     case NONE: {
       char *message = NULL;
       message = strtok(buffer, ":");
       if (strcmp(message, "new_nimbus") == 0) {          
         strcpy(id, strtok(NULL, ":"));
+        if (socketPrecondition == WAITING_TO_SEED) {
+          loadAndSeedFromFile();
+          socketPrecondition = NONE;
+        }
         newNimbusCreated();
       } else if (strcmp(message, "seed_buffer") == 0) {
         edit.buffer[0] = '\0';

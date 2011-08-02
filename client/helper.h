@@ -13,18 +13,16 @@
 #include <unistd.h>     /* for close() & STDIN_FILENO */
 #include <errno.h>    
 #include <ncurses.h>
+#include "constants.h"
+#include "externs.h"
 
-#define NB_ENABLE 0
-#define NB_DISABLE 1
-
-#define NIMBUS_ID_LEN 16
-#define BIGBUF 256
-#define SMALLBUF 32
-
-extern int sockfd;
-extern char id[NIMBUS_ID_LEN];
-
-void startupHandler(int argc, char *argv[]);
+void startgui(void);
+void printTopCenter(char *msg);
+void printTopLeft(char *msg);
+void printTopRight(char *msg);
+void printBottomLeft(char *msg);
+void backSpaceBuffer(char *buffer, int last_line_no);
+void clearLine(int line_no);
 void configTerminal(int state); // disable line buffering, echo, etc
 void backSpaceBuffer(char *buffer, int last_line_no);
 void clearLine(int line_no);

@@ -10,8 +10,12 @@ task :build => :clean do
   sh "gcc -o nim #{Dir['*.o'].join ' '} #{"-l#{DEPS}" if DEPS.size>0 rescue nil}"
 end
 
-task :run do
+task :blank do
   sh "./nim" rescue nil
+end
+
+task :new do
+  sh "./nim README" rescue nil
 end
 
 task :server do
@@ -29,8 +33,9 @@ task :kill do
 end
 
 task :b => :build
-task :r => :run
+task :r => :blank
+task :n => [:build, :new]
 task :s => :server
 task :c => :console
 task :k => :kill
-task :default => [:build, :run]
+task :default => [:build, :r]

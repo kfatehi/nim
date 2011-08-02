@@ -3,29 +3,7 @@
 
 #include "helper.h" // Provides convenient abstractions on annoying shit.
 #include "nimbus.h" // Provides wrapper functions for interfacing with a nimbus.
-#include "keys.h"
 
-#define HOSTNAME "127.0.0.1"
-#define PORT "8000"
-
-// Contexts
-#define PREVIOUS -1
-#define ROOT 0
-#define CMND 1
-#define EDIT 2
-#define CHAT 3
-
-// Socket Preconditions
-#define NONE 0
-//#define REMOTE_ERROR -1 // error:xxxxxxxxxx
-//#define NIMBUS_CREATED 1 // new_nimbus:xxxxxx
-//#define INCOMING_SEED 2 // seed_buffer:...
-#define OVERFLOW_SEED 10 // expecting more data
-//#define END_OF_SEED 3 // ...:end_seed
-//#define SEED_CONFIRM 4 // buffer_seed_ok
-
-
-#define EDITOR_BUF_SIZE 4092
 
 // Structs
 struct _terminal { // i may use this for catching escape sequences
@@ -55,6 +33,7 @@ struct _context {
 // Globals
 char socketPrecondition = NONE; // used when receiving socket data
 char Running = 1; // flipping this kills the loop
+char filePath[256];
 struct _terminal;
 struct _context context;
 struct _cmnd cmnd;
@@ -62,8 +41,6 @@ struct _edit edit;
 
 int sockfd; // socket file descriptor
 char id[NIMBUS_ID_LEN]; // nimbus id
-
-void editorSeeded(void);
 
 void onSocketData(void);
 void onKeyData(void);

@@ -3,8 +3,8 @@
 
 #include "helper.h"
 
-int sendToNimbus(char *msg);
-int getFromNimbus(char *msg);
-// int seedNimbus(const int sock, char *id, filepath);
+void editorSeeded(void);
+void newNimbusCreated(void);
+int loadAndSeedFromFile(char *filepath);
 
 #endif /* NIMBUS_H */

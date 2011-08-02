@@ -53,7 +53,7 @@ var doCreateNewNimbus = function (socket)
 }
 var doSeedBuffer = function (data, id, socket)
 {
-  var buffer = data.slice(18, data.length);
+  var buffer = data.slice(19, data.length);
   console.log('Seeding buffer: '+id);
   redis.set('nimbus:'+id, buffer, function (err, reply) {
     if (reply == 'OK') {
@@ -85,7 +85,7 @@ var server = net.createServer(function (socket) {
       var params = parts.slice(1, parts.length);
       if (DEBUG) console.log(params);
       if (params[0] && params[0].length >= 6)
-        var id = params[0].slice(0, 5);
+        var id = params[0].slice(0, 6);
       switch (message) {
         case 'join_nimbus':{
           var id = params[0];

@@ -1,5 +1,13 @@
 #include "helper.h"
 
+void startgui() {
+  configTerminal(NB_ENABLE);
+  initscr();
+  switchContext(ROOT);
+  printTopCenter("NIM");
+  refresh();
+}
+
 void printTopCenter(char *msg) {
   mvprintw(0, (COLS-strlen(msg))/2, "%s", msg);
 }
@@ -17,7 +25,6 @@ void printBottomLeft(char *msg) {
 }
 
 void backSpaceBuffer(char *buffer, int last_line_no) {
-  // Backspaces a buffer 
   int new_len = strlen(buffer)-1;
   buffer[new_len] = '\0';
   mvaddch(last_line_no, new_len, ' ');
@@ -30,21 +37,6 @@ void clearLine(int line_no) {
   for (i = 0; i < width; i++) blank[i] = ' ';
   blank[width] = '\0';
   mvprintw(line_no, 0, blank);	// Move and print string
-}
-
-void startupArgumentsHandler(int argc, char *argv[]) {
-  if ( argc == 1 ){ // no args, create blank new nimbus
-    printBottomLeft("Creating new nimbus, please wait.");
-		writeSocket(sockfd, "create_new_nimbus");
-	} else if ( argc >= 2 ) {	
-		if ( (strcmp(argv[1],"-h") & strcmp(argv[1],"--help")) == 0 || argc > 2 ) {
-			fprintf(stderr, "Usage: \n%s\n%s /path/to/file\n%s <nimbus_id>\n", argv[0], argv[0], argv[0]);
-		} else if ( fileExists(argv[1]) == 1 )
-			fprintf(stdout, "Creating new nimbus from file %s\n", argv[1]);
-		else {
-			fprintf(stdout, "Asking server if %s is a valid nimbus id...\n", argv[1]);
-		}
-	}
 }
 
 void configTerminal(int state) {
@@ -103,9 +95,9 @@ int fileExists(const char *filename) {
 	FILE *file;
 	if (file = fopen(filename, "r"))  {
 		fclose(file);
-		return 0;
+		return 1;
 	}
-	return 1;
+	return -1;
 }
 
 // int getFileContents(const char *filename) {
