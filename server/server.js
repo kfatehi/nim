@@ -96,7 +96,7 @@ var server = net.createServer(function (socket) {
               console.error('  Redis-related error. Buffer seeding failed: '+id);
               console.error(err);
             } else {
-              socket.write('seed_buffer:'+id+'>'+buffer);
+              socket.write('seed_buffer:'+buffer+':end_seed');
               console.log('Sent buffer for nimbus: '+id);
             }
           });

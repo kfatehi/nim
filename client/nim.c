@@ -5,7 +5,6 @@
   \* * * * * * * * * * * * * * * * * * * * * * */ 
 #include "nim.h"
 
-int socketMode;
 
 int main(int argc, char *argv[]) {
   struct pollfd ufds[2];
@@ -42,16 +41,18 @@ void onSocketData() {
   int bytes;
   memset(buffer, 0, BIGBUF);
   bytes = readSocket(sockfd, buffer, BIGBUF);
+
   if (socketMode == OVERSIZE) {
     // Use socketMode to capture long seeds that exceed BIGBUF
   } else {
     char delims[3] = ":>";
     char *result = NULL;
     result = strtok(buffer, delims);
-    int i;
-    for (i = 0; ((result != NULL) && (i > -1)); i++) {
+    int message;
+    for (result != NULL) {
       result = strtok(NULL, delims);
-      if strcmp(result
+      switch 
+      if strcmp(result, "new_nimbus") 
     }
   }
 
