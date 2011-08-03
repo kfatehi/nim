@@ -10,7 +10,10 @@
 #define RETURN 13
 #define ESCAPE 27
 #define BACKSPACE 127
-
+#define UP 72
+#define LEFT 75
+#define RIGHT 77
+#define DOWN 80
 
 #define NB_ENABLE 0
 #define NB_DISABLE 1
@@ -39,5 +42,10 @@
 //#define END_OF_SEED 3 // ...:end_seed
 //#define SEED_CONFIRM 4 // buffer_seed_ok
 #define EDITOR_BUF_SIZE 4092
+
+// Methods of nimbus entries
+#define BLANK 0
+#define FROM_FILE 1
+#define JOINED 2
 
 #endif /* CONSTANTS_H */

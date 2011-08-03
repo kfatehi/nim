@@ -87,6 +87,13 @@ var server = net.createServer(function (socket) {
       if (params[0] && params[0].length >= 6)
         var id = params[0].slice(0, 6);
       switch (message) {
+        case 'exists?':{
+          var id = params[0];
+          redis.exists('nimbus:'+id, function(err, reply){
+            console.log(err);
+          });
+          break;
+        }
         case 'join_nimbus':{
           var id = params[0];
           console.log('Client is joining nimbus: '+id);

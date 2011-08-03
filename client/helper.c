@@ -3,6 +3,7 @@
 void startgui() {
   configTerminal(NB_ENABLE);
   initscr();
+  keypad(stdscr, TRUE);
   switchContext(ROOT);
   printTopCenter("NIM");
   refresh();
@@ -21,6 +22,7 @@ void printTopRight(char *msg) {
 }
 
 void printBottomLeft(char *msg) {
+  clearLine(LINES-1);
   mvprintw(LINES-1, 0, "%s", msg);
 }
 
@@ -89,6 +91,16 @@ int readSocket(const int sock, char *buffer, const unsigned int buf_size) {
     fprintf(stderr, "recv() failed or connection closed prematurely");
   buffer[bytesRcvd] = '\0';  /* Terminate the string! */
   return bytesRcvd;
+}
+
+void setUfds(struct pollfd *pUfds, int fd1, int fd2) {
+  // Used to set a file descriptor set with two file descriptors
+  // in preparation to pass into poll() for our event loop
+  // must connectSocket() on the sockfd BEFORE using this function
+  pUfds[0].fd = fd1; 
+  pUfds[0].events = POLLIN; // we only care if FD is ready for read
+  pUfds[1].fd = fd2;
+  pUfds[1].events = POLLIN; // same thing here.
 }
 
 int fileExists(const char *filename) {

@@ -4,7 +4,7 @@
 #include "helper.h"
 
 void editorSeeded(void);
-void newNimbusCreated(void);
+void initialSyncNotice(int method);
 int loadAndSeedFromFile(char *filepath);
 
 #endif /* NIMBUS_H */

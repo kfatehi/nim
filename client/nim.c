@@ -7,11 +7,8 @@
 
 int main(int argc, char *argv[]) {
   struct pollfd ufds[2];
-  ufds[0].fd = sockfd;
-  ufds[0].events = POLLIN;
-  ufds[1].fd = STDIN_FILENO;
-  ufds[1].events = POLLIN;
   connectSocket(&sockfd, HOSTNAME, PORT);
+  setUfds(ufds, sockfd, STDIN_FILENO);
   if ( argc == 1 ){ // no args, create blank new nimbus
     startgui();
     printBottomLeft("Creating new nimbus, please wait.");
@@ -22,14 +19,16 @@ int main(int argc, char *argv[]) {
       exit(1);
 		} else {
 		  if ( fileExists(argv[1]) == 1 ) {
-        socketPrecondition = WAITING_TO_SEED;
   		  fprintf(stdout, "Creating new nimbus from file %s\n", argv[1]);
         strcpy(filePath, argv[1]);
         startgui();
+        socketPrecondition = WAITING_TO_SEED;
         writeSocket(sockfd, "create_new_nimbus");
   		} else {
   			fprintf(stdout, "Asking server if %s is a valid nimbus id...\nnot implemented\n", argv[1]);
-  			// not implemented
+  			// ask server if it is valid by sending "exists?:" + argv[1]
+  			// if it is valid (returns yes or no)
+  			//    request the seed by sending "join_nimbus:" + argv[1]
   		}
 		}
 	}
@@ -50,24 +49,42 @@ int main(int argc, char *argv[]) {
   exit(0);
 }
 
-void onSocketData() {
+void onSocketData() {  
   char buffer[BIGBUF];
   int bytes;
   memset(buffer, 0, BIGBUF);
   bytes = readSocket(sockfd, buffer, BIGBUF);
-
   switch (socketPrecondition) {
+    case WAITING_TO_JOIN:{
+      char *message = NULL;
+      message = strtok(buffer, ":");
+      printBottomLeft(message); // debug
+      if (strcmp(message, "yes") == 0) {
+        strcpy(id, strtok(NULL, ":"));
+        socketPrecondition = NONE;
+      } else if (strcmp(message, "no") == 0) {
+        
+      } else {
+        char failOut[COLS];
+        strcpy(failOut, "Got an invalid response when asking about ");
+        strcat(failOut, id);
+        printBottomLeft(failOut);
+      }
+      socketPrecondition = NONE;
+      break;
+    }
     case WAITING_TO_SEED:
     case NONE: {
       char *message = NULL;
       message = strtok(buffer, ":");
+      printBottomLeft(message); // debug
       if (strcmp(message, "new_nimbus") == 0) {          
         strcpy(id, strtok(NULL, ":"));
         if (socketPrecondition == WAITING_TO_SEED) {
-          loadAndSeedFromFile();
+          loadAndSeedFromFile(filePath);
           socketPrecondition = NONE;
-        }
-        newNimbusCreated();
+        }        
+        initialSyncNotice(BLANK);
       } else if (strcmp(message, "seed_buffer") == 0) {
         edit.buffer[0] = '\0';
         if (strstr(message, "end_seed")) { // buffer contains :end_seed
@@ -75,6 +92,8 @@ void onSocketData() {
           editorSeeded();
         } else socketPrecondition = OVERFLOW_SEED;
         strcat(edit.buffer, buffer);
+      } else if (strcmp(message, "buffer_seed_ok") == 0) {
+        initialSyncNotice(strlen(filePath) > 0 ? FROM_FILE : JOINED);
       } else if (strcmp(message, "error") == 0) {
         char error[64] = "error: ";
         strcat(error, strtok(NULL, ":"));
@@ -97,7 +116,6 @@ void onSocketData() {
       break;
     }
   }
-
   refresh();
 }
 
@@ -105,11 +123,11 @@ void onKeyData() {
   char c;
   char str[2] = " \0";
   int bytes;
-  if ((bytes = read(STDIN_FILENO, &c, 1)) >= 0) {
+  if ((bytes = read(STDIN_FILENO, &c, 1)) >= 0) { // if STDIN read success:
     str[0] = c;
-    if (c == CTRL_C) Running = 0;
+    if (c == CTRL_C) Running = 0; // Quit on CTRL-C
     mvprintw(0, 0, "keycode: %d character: %s   ", c, str); 
-    switch (context.current) {
+    switch (context.current) { // What context are we in?
       case EDIT:{
         switch (c) {
           case ESCAPE:{
@@ -132,20 +150,20 @@ void onKeyData() {
       }
       case ROOT:{
         switch (c) {
-          case 'n':{ // navigation buttons.
-            switchContext(CMND);
+          case UP:{
+            printBottomLeft("up");
             break;
           }
           case ':':{
-            switchContext(CMND);
+            switchContext(CMND); // not implemented
             break;
           }
           case '?':{
-            switchContext(CHAT);
+            switchContext(CHAT); // not implemented
             break;
           }
           case 'i':{
-            switchContext(EDIT);
+            switchContext(EDIT); // not implemented
             break;
           }
         }
@@ -182,9 +200,7 @@ void onKeyData() {
       }
     }
     refresh();
-    writeSocket(sockfd, str);
-    if (context.current == CMND)
-      writeSocket(sockfd, cmnd.buffer);
+    // writeSocket(sockfd, str); // debug
   } else perror("read(stdin)");
 }
 
@@ -193,10 +209,15 @@ void executeCommand(char *str) {
   // :x Save and quit
   if (strcmp(str, ":q") == 0)
     Running = 0; // flip killswitch
+  else {
+    char out[32] = "Unrecognized command: \"";
+    strcat(out, str);
+    strcat(out, "\"");
+    printBottomLeft(out);
+  }
 }
 
 void switchContext(int n) {
-  clearLine(LINES-1);
   if (n == PREVIOUS) {
     int temp = context.current;
     context.current = context.previous;

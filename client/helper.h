@@ -33,6 +33,7 @@ int writeSocket(const int sock, const char *buffer);
 int readSocket(const int sock, char *buffer, const unsigned int buf_size);
 
 // Misc
+void setUfds(struct pollfd *pUfds, int fd1, int fd2);
 int fileExists(const char *filename);
 void dieWithError(char *errorMessage);
 

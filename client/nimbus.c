@@ -1,19 +1,28 @@
 #include "nimbus.h"
 
 void editorSeeded() {
-  clearLine(LINES-1);
   printBottomLeft("Editor seeded!");
 }
+void initialSyncNotice(int method) {
+  char out[COLS];
+  if (method == BLANK)
+    strcpy(out, "Blank nimbus created. ID: ");
+  else if (method == FROM_FILE)
+    strcpy(out, "New nimbus created from file. ID: ");
+  else if (method == JOINED)
+    strcpy(out, "Joined existing nimbus. ID: ");
+  strcat(out, id);
+  printTopCenter(id);
+  printBottomLeft(out);
+}
 void newNimbusCreated() {
-  char msg[48] = "New empty nimbus created: ";
-  strcat(msg, id);
-  clearLine(LINES-1);
-  printBottomLeft(msg);
+  char out[COLS];
+
 }
 int loadAndSeedFromFile(char *filepath){
   char head[32] = "seed_buffer:";
   strcat(head, id);
-  strcat(">")
+  strcat(head, ">");
   
   FILE *pFile;
   long lSize;
@@ -35,9 +44,11 @@ int loadAndSeedFromFile(char *filepath){
   // copy file into buffer
   result = fread(buffer, 1, lSize, pFile);
   if (result != lSize) return -3;
+  
 
+  writeSocket(sockfd, head);
   writeSocket(sockfd, buffer);
-
+  
   fclose(pFile);
   free(buffer);
   
