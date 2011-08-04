@@ -1,0 +1,26 @@
+19:35 keyvan: LeoNerd: hey, i managed to use Ncurses in an async fashion using poll(), thanks for the challenge though i felt very good when i solved it. i wrote about it here if you care: http://bit.ly/qTeXTs
+23:50 LeoNerd: keyvan: Yes; that's sortof cheating because in general curses might want to be reading input from the terminal anyway... But if you're going to do that and not use getch, might I suggest using libtermkey, to handle keyboard (and potentially mouse) input from the terminal?
+23:50 LeoNerd: http://www.leonerd.org.uk/code/libtermkey/
+23:50 candide: Title of LeoNerd's link: libtermkey
+23:50 keyvan: LeoNerd: thank you, that may solve the issue of up down left right being ABCD
+23:50 LeoNerd: Yes; it will do
+23:51 LeoNerd: They'll become  { .type = TERMKEY_TYPE_SYM, .sym = TERMKEY_SYM_DOWN }  :)
+23:51 LeoNerd: etc
+23:51 LeoNerd: Yes.. Thing is that there are a -few- things that a program might want to do, that query a terminal, expecting a reply
+23:51 LeoNerd: I don't know if curses does any of those
+23:51 keyvan: LeoNerd: ok cool i'll look into it, hopefully theres good documentations :]
+23:51 LeoNerd: but if it does, you've now got in its way preventing it from knowing
+23:52 LeoNerd: All full manpages of all the functions. Also online at: http://home.leonerd.org.uk/code/libtermkey/doc/termkey_new.3.html  etc..
+23:52 candide: Title of LeoNerd's link: TERMKEY_NEW(3)
+23:52 keyvan: LeoNerd: well basically i'm just having poll() check stdin, from which I pull 1 character a time, hopefully that will play nice with libtermkey
+23:56 LeoNerd: keyvan: Yup; termkey fully supports async.
+23:56 LeoNerd: keyvan: Evenever poll() tells you STDIN is readready, simply call termkey_advicereadable() then as many calls to termkey_getkey() until it gives you TERMKEY_RES_AGAIN
+23:56 LeoNerd: Or rather, while it gives you TERMKEY_RES_KEY
+23:57 LeoNerd: keyvan: There's even an async. demo program in the tarball that uses poll in exactly that way
+23:57 keyvan: LeoNerd: thanks for your help
+23:57 keyvan: LeoNerd: i'll check it out tomorrow when i work on my program again
+23:58 LeoNerd: Noprog :)
+23:58 LeoNerd: prob. also
+23:58 LeoNerd: keyvan: http://home.leonerd.org.uk/code/libtermkey/doc/termkey_getkey.3.html   <== infact this manpage even gives the example code too
+23:58 candide: Title of LeoNerd's link: TERMKEY_GETKEY(3)
+23:59 keyvan: LeoNerd: noice :D
