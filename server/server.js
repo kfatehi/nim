@@ -83,14 +83,19 @@ var server = net.createServer(function (socket) {
       var parts = data.split(':');
       var message = parts[0];
       var params = parts.slice(1, parts.length);
-      if (DEBUG) console.log(params);
+      if (DEBUG) {
+        console.log(message);
+        console.log(params);
+      }
       if (params[0] && params[0].length >= 6)
         var id = params[0].slice(0, 6);
       switch (message) {
         case 'exists?':{
           var id = params[0];
           redis.exists('nimbus:'+id, function(err, reply){
-            console.log(err);
+            var out = (reply == 1 ? 'yes' : 'no');
+            console.log(out);
+            socket.write(out);
           });
           break;
         }

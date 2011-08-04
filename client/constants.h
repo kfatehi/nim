@@ -35,12 +35,14 @@
 // Socket Preconditions
 #define NONE 0
 #define WAITING_TO_SEED 1
+#define WAITING_TO_JOIN 2
 //#define REMOTE_ERROR -1 // error:xxxxxxxxxx
 //#define NIMBUS_CREATED 1 // new_nimbus:xxxxxx
 //#define INCOMING_SEED 2 // seed_buffer:...
 #define OVERFLOW_SEED 10 // expecting more data
 //#define END_OF_SEED 3 // ...:end_seed
 //#define SEED_CONFIRM 4 // buffer_seed_ok
+
 #define EDITOR_BUF_SIZE 4092
 
 // Methods of nimbus entries

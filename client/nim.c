@@ -19,13 +19,18 @@ int main(int argc, char *argv[]) {
       exit(1);
 		} else {
 		  if ( fileExists(argv[1]) == 1 ) {
+        socketPrecondition = WAITING_TO_SEED;
   		  fprintf(stdout, "Creating new nimbus from file %s\n", argv[1]);
         strcpy(filePath, argv[1]);
         startgui();
-        socketPrecondition = WAITING_TO_SEED;
         writeSocket(sockfd, "create_new_nimbus");
   		} else {
-  			fprintf(stdout, "Asking server if %s is a valid nimbus id...\nnot implemented\n", argv[1]);
+        socketPrecondition = WAITING_TO_JOIN;
+        strcpy(id, argv[1]);
+  			fprintf(stdout, "Asking server if %s is a valid nimbus id...\n", argv[1]);
+        char existMsg[32] = "exists?:";
+        strcat(existMsg, argv[1]);
+        writeSocket(sockfd, existMsg);
   			// ask server if it is valid by sending "exists?:" + argv[1]
   			// if it is valid (returns yes or no)
   			//    request the seed by sending "join_nimbus:" + argv[1]
@@ -34,7 +39,7 @@ int main(int argc, char *argv[]) {
 	}
 	do {
     switch(poll(ufds, 2, -1)) {
-      case -1:{ perror("poll()"); break; }
+      case -1:{ refresh(); break;} // resize causes poll() to error, so just refresh()
       default:{
         if (ufds[0].revents & POLLIN)
           onSocketData();
@@ -58,12 +63,13 @@ void onSocketData() {
     case WAITING_TO_JOIN:{
       char *message = NULL;
       message = strtok(buffer, ":");
-      printBottomLeft(message); // debug
+      printf("response buffer:  %s\n", buffer);
+      //printBottomLeft(message); // debug
       if (strcmp(message, "yes") == 0) {
-        strcpy(id, strtok(NULL, ":"));
+        fprintf(stdout, "res: %s\n", "yes it exists");
         socketPrecondition = NONE;
       } else if (strcmp(message, "no") == 0) {
-        
+        fprintf(stdout, "res: %s\n", "no nimbus with that id");
       } else {
         char failOut[COLS];
         strcpy(failOut, "Got an invalid response when asking about ");

@@ -5,6 +5,6 @@
 
 void editorSeeded(void);
 void initialSyncNotice(int method);
-int loadAndSeedFromFile(char *filepath);
+int loadAndSeedFromFile(const char *filepath);
 
 #endif /* NIMBUS_H */

@@ -19,7 +19,7 @@ void newNimbusCreated() {
   char out[COLS];
 
 }
-int loadAndSeedFromFile(char *filepath){
+int loadAndSeedFromFile(const char *filepath){
   char head[32] = "seed_buffer:";
   strcat(head, id);
   strcat(head, ">");
